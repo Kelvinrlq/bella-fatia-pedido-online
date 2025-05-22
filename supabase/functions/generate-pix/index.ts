@@ -88,7 +88,12 @@ serve(async (req) => {
       );
     }
 
-    // Gerar payload PIX
+    // Opção 1: Usar a imagem do QR code enviada pelo usuário para pagamentos estáticos
+    // Esta opção é mais adequada se o valor for sempre o mesmo ou se o QR for estático
+    const staticQrCodeImage = "/lovable-uploads/4a3fe2c2-e954-4c87-a77c-a2a54f323edd.png";
+    
+    // Opção 2: Gerar um payload Pix dinâmico baseado no valor e ordem
+    // Esta opção é melhor para pagamentos com valores variáveis
     const pixPayload = generatePixPayload(
       PIX_KEY,
       MERCHANT_NAME,
@@ -97,13 +102,17 @@ serve(async (req) => {
       value
     );
 
-    // Gerar QR Code
-    const qrCodeImage = await qrcode(pixPayload, { size: 250 });
+    // Gerar QR Code dinâmico
+    const dynamicQrCodeImage = await qrcode(pixPayload, { size: 250 });
+    
+    // Decidir qual QR code usar - neste caso, vamos usar o QR estático que o usuário forneceu
+    // para facilitar o recebimento em sua conta específica
+    const finalQrCodeImage = staticQrCodeImage;
 
     return new Response(
       JSON.stringify({
         pixCopiaECola: pixPayload,
-        qrCodeImage: qrCodeImage,
+        qrCodeImage: finalQrCodeImage, // Usando a imagem estática fornecida pelo usuário
         expirationDate: new Date(Date.now() + 5 * 60 * 1000).toISOString(), // 5 minutos no futuro
       }),
       { 
@@ -124,3 +133,4 @@ serve(async (req) => {
     );
   }
 });
+
