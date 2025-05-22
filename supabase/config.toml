@@ -1,1 +1,9 @@
+
 project_id = "ebwaepfmtqxdbqbprhhi"
+
+[functions.generate-pix]
+
+[functions.check-pix-status]
+
+[functions.pix-webhook]
+verify_jwt = false

@@ -53,7 +53,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex flex-col h-full">
-          {/* Cart Header */}
+          {/* Cabeçalho do Carrinho */}
           <div className="flex items-center justify-between p-4 border-b">
             {isCheckout ? (
               <button onClick={toggleCheckout} className="text-pizza">
@@ -70,7 +70,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
             </button>
           </div>
           
-          {/* Cart Content or Checkout Form */}
+          {/* Conteúdo do Carrinho ou Formulário de Checkout */}
           <div className="flex-1 overflow-auto">
             <AnimatePresence mode="wait">
               {isCheckout ? (
@@ -151,7 +151,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
             </AnimatePresence>
           </div>
           
-          {/* Cart Footer with Totals and Checkout Button */}
+          {/* Rodapé do Carrinho com Totais e Botão de Checkout */}
           {!isCheckout && items.length > 0 && (
             <div className="p-4 border-t">
               <div className="space-y-1 mb-4">
