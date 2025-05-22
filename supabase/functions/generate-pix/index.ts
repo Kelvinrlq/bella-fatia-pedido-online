@@ -4,7 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.43.2";
 import { qrcode } from "https://deno.land/x/qrcode@v2.0.0/mod.ts";
 
 // Dados do PIX estatico
-const PIX_KEY = "12345678900"; // Substitua pela sua chave PIX
+const PIX_KEY = "kelvinrx00@gmail.com"; // Chave PIX do tipo e-mail
 const MERCHANT_NAME = "Bella Fatia Pizzaria";
 const MERCHANT_CITY = "Sua Cidade";
 
