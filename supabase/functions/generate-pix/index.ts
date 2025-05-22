@@ -1,7 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.43.2";
-import { createQR } from "https://deno.land/x/qrcode@v2.0.0/mod.ts";
+import { qrcode } from "https://deno.land/x/qrcode@v2.0.0/mod.ts";
 
 // Dados do PIX estatico
 const PIX_KEY = "12345678900"; // Substitua pela sua chave PIX
@@ -98,13 +98,12 @@ serve(async (req) => {
     );
 
     // Gerar QR Code
-    const qrCode = await createQR(pixPayload);
-    const qrCodeImage = qrCode.toString("base64");
+    const qrCodeImage = await qrcode(pixPayload, { size: 250 });
 
     return new Response(
       JSON.stringify({
         pixCopiaECola: pixPayload,
-        qrCodeImage: `data:image/png;base64,${qrCodeImage}`,
+        qrCodeImage: qrCodeImage,
         expirationDate: new Date(Date.now() + 5 * 60 * 1000).toISOString(), // 5 minutos no futuro
       }),
       { 
