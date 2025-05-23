@@ -31,13 +31,15 @@ const Header: React.FC<HeaderProps> = ({ isOpen, toggleCart, toggleMobileMenu, i
           </button>
           
           <div className="flex items-center">
+            <img 
+              src="/lovable-uploads/65b2e7d6-2b3d-4531-b801-6a4b3f85e81e.png" 
+              alt="Bella Fatia Logo" 
+              className="w-12 h-12 mr-3"
+            />
             <h1 className="text-2xl font-bold text-pizza-contrast">
               <span className="text-pizza">Bella </span>
               Fatia
             </h1>
-            <div className="ml-4 bg-green-500 text-white px-2 py-1 rounded text-xs font-medium">
-              Aberto para pedidos
-            </div>
           </div>
         </div>
 

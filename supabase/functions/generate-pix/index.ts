@@ -37,7 +37,7 @@ function generatePixPayload(
   payload += "52040000"; // Merchant Category Code (0000)
   payload += "5303986"; // Currency (986: BRL)
   
-  // Valor da transação (opcional)
+  // Valor da transação (obrigatório agora)
   const amountStr = amount.toFixed(2);
   payload += "54" + amountStr.length.toString().padStart(2, "0") + amountStr;
   
@@ -88,32 +88,31 @@ serve(async (req) => {
       );
     }
 
-    // Opção 1: Usar a imagem do QR code enviada pelo usuário para pagamentos estáticos
-    // Esta opção é mais adequada se o valor for sempre o mesmo ou se o QR for estático
-    const staticQrCodeImage = "/lovable-uploads/4a3fe2c2-e954-4c87-a77c-a2a54f323edd.png";
-    
-    // Opção 2: Gerar um payload Pix dinâmico baseado no valor e ordem
-    // Esta opção é melhor para pagamentos com valores variáveis
+    console.log(`Gerando PIX para pedido ${orderId} no valor de R$ ${value}`);
+
+    // Gerar payload PIX dinâmico com o valor específico do pedido
     const pixPayload = generatePixPayload(
       PIX_KEY,
       MERCHANT_NAME,
       MERCHANT_CITY,
       orderId,
-      value
+      parseFloat(value)
     );
 
-    // Gerar QR Code dinâmico
+    // Gerar QR Code dinâmico com o valor do pedido
     const dynamicQrCodeImage = await qrcode(pixPayload, { size: 250 });
     
-    // Decidir qual QR code usar - neste caso, vamos usar o QR estático que o usuário forneceu
-    // para facilitar o recebimento em sua conta específica
-    const finalQrCodeImage = staticQrCodeImage;
+    // Usar o QR code dinâmico que contém o valor específico do pedido
+    const finalQrCodeImage = `data:image/png;base64,${btoa(dynamicQrCodeImage)}`;
+
+    console.log(`PIX gerado com sucesso para o valor de R$ ${value}`);
 
     return new Response(
       JSON.stringify({
         pixCopiaECola: pixPayload,
-        qrCodeImage: finalQrCodeImage, // Usando a imagem estática fornecida pelo usuário
-        expirationDate: new Date(Date.now() + 5 * 60 * 1000).toISOString(), // 5 minutos no futuro
+        qrCodeImage: finalQrCodeImage,
+        orderValue: value,
+        expirationDate: new Date(Date.now() + 15 * 60 * 1000).toISOString(), // 15 minutos
       }),
       { 
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -133,4 +132,3 @@ serve(async (req) => {
     );
   }
 });
-

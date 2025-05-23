@@ -17,7 +17,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
   const { toast } = useToast();
   const { items, totalPrice, clearCart } = useCart();
   const [loading, setLoading] = useState(false);
-  const [pixQrCode, setPixQrCode] = useState<string | null>(null);
+  const [pixData, setPixData] = useState<{qrCodeImage: string, pixCopiaECola: string, orderValue: number} | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
   
   const [formData, setFormData] = useState({
@@ -82,8 +82,10 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
           
         if (itemsError) throw itemsError;
         
-        // Chamar a função Edge do Supabase para gerar o Pix
-        const { data: pixData, error: pixError } = await supabase.functions.invoke('generate-pix', {
+        console.log('Gerando PIX com valor total:', totalPrice);
+        
+        // Chamar a função Edge do Supabase para gerar o Pix com o valor total
+        const { data: pixResponse, error: pixError } = await supabase.functions.invoke('generate-pix', {
           body: { 
             orderId: orderData.id,
             value: totalPrice,
@@ -91,18 +93,27 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
           }
         });
         
-        if (pixError) throw pixError;
+        if (pixError) {
+          console.error('Erro na função PIX:', pixError);
+          throw pixError;
+        }
+        
+        console.log('PIX gerado com sucesso:', pixResponse);
         
         // Atualizar pedido com código Pix
         await supabase
           .from('orders')
           .update({
-            pix_code: pixData.pixCopiaECola,
-            pix_expiration: new Date(Date.now() + 5 * 60 * 1000).toISOString() // 5 minutos
+            pix_code: pixResponse.pixCopiaECola,
+            pix_expiration: new Date(Date.now() + 15 * 60 * 1000).toISOString() // 15 minutos
           })
           .eq('id', orderData.id);
           
-        setPixQrCode(pixData.qrCodeImage);
+        setPixData({
+          qrCodeImage: pixResponse.qrCodeImage,
+          pixCopiaECola: pixResponse.pixCopiaECola,
+          orderValue: pixResponse.orderValue || totalPrice
+        });
         setOrderId(orderData.id);
         
       } else {
@@ -170,15 +181,33 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
   };
 
   // Se temos um QR code Pix para mostrar
-  if (pixQrCode) {
+  if (pixData) {
     return (
       <div className="p-4 space-y-6 flex flex-col items-center">
         <h2 className="text-xl font-semibold text-center">Pagamento via PIX</h2>
-        <p className="text-center">Escaneie o QR Code abaixo ou copie o código para efetuar o pagamento.</p>
+        <p className="text-center">Escaneie o QR Code abaixo para efetuar o pagamento de <strong>R$ {pixData.orderValue.toFixed(2)}</strong></p>
         <div className="border p-4 rounded-lg bg-white">
-          <img src={pixQrCode} alt="QR Code PIX" className="w-64 h-64 mx-auto" />
+          <img src={pixData.qrCodeImage} alt="QR Code PIX" className="w-64 h-64 mx-auto" />
         </div>
-        <p className="text-sm text-center text-gray-500">O QR Code expira em 5 minutos</p>
+        <div className="w-full max-w-md">
+          <Label htmlFor="pix-code" className="text-sm font-medium">Código PIX (Copia e Cola):</Label>
+          <div className="flex gap-2 mt-1">
+            <Input 
+              id="pix-code"
+              value={pixData.pixCopiaECola} 
+              readOnly 
+              className="text-xs"
+            />
+            <Button 
+              onClick={() => navigator.clipboard.writeText(pixData.pixCopiaECola)}
+              variant="outline"
+              size="sm"
+            >
+              Copiar
+            </Button>
+          </div>
+        </div>
+        <p className="text-sm text-center text-gray-500">O QR Code expira em 15 minutos</p>
         <p className="text-sm text-center">ID do Pedido: <span className="font-mono">{orderId}</span></p>
         <div className="space-y-2 w-full">
           <Button 
@@ -334,14 +363,23 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
         />
       </div>
       
+      <div className="bg-gray-50 p-3 rounded-lg mb-4">
+        <div className="flex justify-between items-center text-lg font-semibold">
+          <span>Total do Pedido:</span>
+          <span className="text-pizza">R$ {totalPrice.toFixed(2)}</span>
+        </div>
+      </div>
+      
       <Button 
         type="submit" 
         className="w-full bg-pizza hover:bg-pizza-dark"
         disabled={loading}
       >
-        {formData.formaPagamento === 'pix' 
-          ? "Gerar QR Code PIX" 
-          : "Enviar pedido pelo WhatsApp"}
+        {loading ? "Processando..." : (
+          formData.formaPagamento === 'pix' 
+            ? `Gerar PIX - R$ ${totalPrice.toFixed(2)}` 
+            : "Enviar pedido pelo WhatsApp"
+        )}
       </Button>
     </form>
   );
