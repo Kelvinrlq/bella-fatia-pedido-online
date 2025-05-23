@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,8 +33,32 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
     observacoes: ''
   });
 
+  const [validationErrors, setValidationErrors] = useState({
+    telefone: false,
+    numero: false
+  });
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    
+    // Validação para campos que devem conter apenas números
+    if (name === 'telefone' || name === 'numero') {
+      const onlyNumbers = /^[0-9\s\(\)\-]*$/;
+      
+      if (value && !onlyNumbers.test(value)) {
+        setValidationErrors(prev => ({ ...prev, [name]: true }));
+        toast({
+          title: "Erro de validação",
+          description: `O campo ${name === 'telefone' ? 'telefone' : 'número'} deve conter apenas números`,
+          variant: "destructive",
+          duration: 3000,
+        });
+        return;
+      } else {
+        setValidationErrors(prev => ({ ...prev, [name]: false }));
+      }
+    }
+    
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
@@ -41,8 +66,28 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
     setFormData(prev => ({ ...prev, formaPagamento: value }));
   };
 
+  const isFormValid = () => {
+    return !validationErrors.telefone && 
+           !validationErrors.numero && 
+           formData.nome && 
+           formData.telefone && 
+           formData.endereco && 
+           formData.numero && 
+           formData.bairro;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!isFormValid()) {
+      toast({
+        title: "Formulário inválido",
+        description: "Por favor, preencha todos os campos obrigatórios corretamente",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setLoading(true);
     
     try {
@@ -56,7 +101,6 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
           subtotal: item.quantity * item.product.price
         }));
         
-        // Criar o pedido no Supabase
         const { data: orderData, error: orderError } = await supabase
           .from('orders')
           .insert({
@@ -72,7 +116,6 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
           
         if (orderError) throw orderError;
         
-        // Inserir os itens do pedido
         const { error: itemsError } = await supabase
           .from('order_items')
           .insert(orderItems.map(item => ({
@@ -84,7 +127,6 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
         
         console.log('Gerando PIX com valor total:', totalPrice);
         
-        // Chamar a função Edge do Supabase para gerar o Pix com o valor total
         const { data: pixResponse, error: pixError } = await supabase.functions.invoke('generate-pix', {
           body: { 
             orderId: orderData.id,
@@ -100,12 +142,11 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
         
         console.log('PIX gerado com sucesso:', pixResponse);
         
-        // Atualizar pedido com código Pix
         await supabase
           .from('orders')
           .update({
             pix_code: pixResponse.pixCopiaECola,
-            pix_expiration: new Date(Date.now() + 15 * 60 * 1000).toISOString() // 15 minutos
+            pix_expiration: new Date(Date.now() + 15 * 60 * 1000).toISOString()
           })
           .eq('id', orderData.id);
           
@@ -122,13 +163,9 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
           `${item.quantity}x ${item.product.name} - R$ ${(item.quantity * item.product.price).toFixed(2)}`
         ).join('\n');
         
-        // Formato do total
         const totalText = `\nTotal: R$ ${totalPrice.toFixed(2)}`;
-        
-        // Formato do endereço
         const addressText = `${formData.endereco}, ${formData.numero}${formData.complemento ? `, ${formData.complemento}` : ''}\n${formData.bairro}`;
         
-        // Formato dos detalhes do pagamento
         let paymentText = `Forma de pagamento: ${formData.formaPagamento === 'dinheiro' ? 'Dinheiro' : 
           formData.formaPagamento === 'cartao' ? 'Cartão' : 'PIX'}`;
         
@@ -136,7 +173,6 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
           paymentText += `\nTroco para: R$ ${formData.troco}`;
         }
         
-        // Montar mensagem do WhatsApp
         const message = `
 *Novo Pedido da Bella Fatia*
 *Nome*: ${formData.nome}
@@ -150,21 +186,17 @@ ${totalText}
 ${paymentText}
 ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
         
-        // Codificar a mensagem para a URL do WhatsApp
         const encodedMessage = encodeURIComponent(message);
         const whatsappUrl = `https://wa.me/5567984837419?text=${encodedMessage}`;
         
-        // Abrir WhatsApp em uma nova janela
         window.open(whatsappUrl, '_blank');
         
-        // Mostrar toast de confirmação
         toast({
           title: "Pedido enviado!",
           description: "Seu pedido foi enviado por WhatsApp. Aguarde a confirmação.",
           duration: 5000,
         });
         
-        // Limpar o carrinho e voltar para produtos
         clearCart();
         onCancel();
       }
@@ -212,7 +244,6 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
         <div className="space-y-2 w-full">
           <Button 
             onClick={() => {
-              // Verificar status do pedido
               window.location.href = `/status-pedido/${orderId}`;
             }}
             className="w-full bg-pizza hover:bg-pizza-dark"
@@ -254,7 +285,7 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
           <Input 
             id="telefone" 
             name="telefone"
-            className="pl-10"
+            className={`pl-10 ${validationErrors.telefone ? 'border-red-500' : ''}`}
             placeholder="(99) 99999-9999"
             value={formData.telefone}
             onChange={handleInputChange}
@@ -285,6 +316,7 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
           <Input 
             id="numero" 
             name="numero"
+            className={validationErrors.numero ? 'border-red-500' : ''}
             placeholder="123"
             value={formData.numero}
             onChange={handleInputChange}
@@ -373,7 +405,7 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
       <Button 
         type="submit" 
         className="w-full bg-pizza hover:bg-pizza-dark"
-        disabled={loading}
+        disabled={loading || !isFormValid()}
       >
         {loading ? "Processando..." : (
           formData.formaPagamento === 'pix' 

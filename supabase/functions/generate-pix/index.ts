@@ -1,7 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.43.2";
-import { qrcode } from "https://deno.land/x/qrcode@v2.0.0/mod.ts";
 
 // Dados do PIX estatico
 const PIX_KEY = "kelvinrx00@gmail.com"; // Chave PIX do tipo e-mail
@@ -12,56 +11,6 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
-// Função para gerar o payload PIX (formato BR Code)
-function generatePixPayload(
-  pixKey: string, 
-  merchantName: string, 
-  merchantCity: string, 
-  orderId: string, 
-  amount: number
-): string {
-  // Iniciar o payload
-  let payload = "";
-  
-  // Adicionar os campos obrigatórios de acordo com o padrão EMV do Pix
-  payload += "000201"; // Payload Format Indicator (01)
-  payload += "010212"; // Point of Initiation Method (11: static, 12: dynamic)
-  
-  // Merchant Account Information
-  payload += "26"; // ID do campo
-  let merchantAccountInfo = "0014br.gov.bcb.pix"; // Domínio do Pix
-  merchantAccountInfo += "01" + pixKey.length.toString().padStart(2, "0") + pixKey;
-  payload += merchantAccountInfo.length.toString().padStart(2, "0") + merchantAccountInfo;
-  
-  payload += "52040000"; // Merchant Category Code (0000)
-  payload += "5303986"; // Currency (986: BRL)
-  
-  // Valor da transação (obrigatório agora)
-  const amountStr = amount.toFixed(2);
-  payload += "54" + amountStr.length.toString().padStart(2, "0") + amountStr;
-  
-  // País do comerciante
-  payload += "5802BR";
-  
-  // Nome do comerciante
-  payload += "59" + merchantName.length.toString().padStart(2, "0") + merchantName;
-  
-  // Cidade do comerciante
-  payload += "60" + merchantCity.length.toString().padStart(2, "0") + merchantCity;
-  
-  // ID da transação
-  const txid = "***" + orderId.substring(0, 22);
-  payload += "62" + (txid.length + 4).toString().padStart(2, "0") + "05" + txid.length.toString().padStart(2, "0") + txid;
-  
-  // CRC16
-  payload += "6304";
-  // Adicionando um checksum fictício - em uma implementação real, você calcularia o CRC16
-  // Mas para simplificar, estamos usando "0000" como placeholder
-  payload += "0000";
-  
-  return payload;
-}
 
 serve(async (req) => {
   // Lidar com requisição OPTIONS para CORS
@@ -90,27 +39,18 @@ serve(async (req) => {
 
     console.log(`Gerando PIX para pedido ${orderId} no valor de R$ ${value}`);
 
-    // Gerar payload PIX dinâmico com o valor específico do pedido
-    const pixPayload = generatePixPayload(
-      PIX_KEY,
-      MERCHANT_NAME,
-      MERCHANT_CITY,
-      orderId,
-      parseFloat(value)
-    );
-
-    // Gerar QR Code dinâmico com o valor do pedido
-    const dynamicQrCodeImage = await qrcode(pixPayload, { size: 250 });
+    // Usar QR code estático da imagem fornecida pelo usuário
+    const staticQrCodeImage = "/lovable-uploads/4a3fe2c2-e954-4c87-a77c-a2a54f323edd.png";
     
-    // Usar o QR code dinâmico que contém o valor específico do pedido
-    const finalQrCodeImage = `data:image/png;base64,${btoa(dynamicQrCodeImage)}`;
+    // Payload PIX simplificado para copia e cola
+    const pixPayload = `00020126580014br.gov.bcb.pix0136${PIX_KEY}5204000053039865802BR5925${MERCHANT_NAME}6009Sua Cidade62070503***6304`;
 
-    console.log(`PIX gerado com sucesso para o valor de R$ ${value}`);
+    console.log(`PIX gerado com sucesso`);
 
     return new Response(
       JSON.stringify({
         pixCopiaECola: pixPayload,
-        qrCodeImage: finalQrCodeImage,
+        qrCodeImage: staticQrCodeImage,
         orderValue: value,
         expirationDate: new Date(Date.now() + 15 * 60 * 1000).toISOString(), // 15 minutos
       }),
