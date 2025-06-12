@@ -5,19 +5,19 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 const banners = [
   {
     id: 1,
-    image: "https://img.freepik.com/free-photo/top-view-pepperoni-pizza-with-mushroom-sausages-bell-pepper-olive-corn-black-wooden_141793-2158.jpg",
+    image: "/lovable-uploads/de014fcd-7fe6-4274-a67a-cd47cd7c366c.png",
     title: "Pizza Tradicional",
     description: "Experimente nossas pizzas tradicionais"
   },
   {
     id: 2,
-    image: "https://img.freepik.com/free-photo/mixed-pizza-with-various-ingridients_140725-3790.jpg",
-    title: "Especial do Dia",
-    description: "30% off em todas as pizzas especiais"
+    image: "/lovable-uploads/824851ab-f21b-4313-b2a5-c18ba91c6036.png",
+    title: "Nosso Delivery Tá ON",
+    description: "Faça seu pedido: (12)3456-7890"
   },
   {
     id: 3,
-    image: "https://img.freepik.com/free-photo/delicious-italian-food_1147-165.jpg",
+    image: "/lovable-uploads/72579abf-ad8e-43c2-b4d7-9c414f4e6d0f.png",
     title: "Combo Família",
     description: "2 pizzas grandes + refrigerante 2L"
   }

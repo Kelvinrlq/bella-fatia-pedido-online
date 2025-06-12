@@ -1,4 +1,3 @@
-
 export const categories = [
   { id: 'all', name: 'Todos' },
   { id: 'traditional', name: 'Pizzas Tradicionais' },
@@ -14,7 +13,7 @@ export const products = [
     name: 'Pizza Margherita',
     description: 'Molho de tomate, mussarela, manjericão fresco e orégano.',
     price: 39.9,
-    image: 'https://images.unsplash.com/photo-1604917877934-07d8d248d396?q=80&w=1000&auto=format&fit=crop',
+    image: '/lovable-uploads/de014fcd-7fe6-4274-a67a-cd47cd7c366c.png',
     categoryId: 'traditional',
   },
   {
@@ -22,7 +21,7 @@ export const products = [
     name: 'Pizza Calabresa',
     description: 'Molho de tomate, mussarela, calabresa fatiada, cebola e orégano.',
     price: 42.9,
-    image: 'https://img.freepik.com/premium-photo/pizza-with-salami-tomato-sauce-olives-cheese_114941-2485.jpg',
+    image: '/lovable-uploads/72579abf-ad8e-43c2-b4d7-9c414f4e6d0f.png',
     categoryId: 'traditional',
   },
   {
@@ -30,7 +29,7 @@ export const products = [
     name: 'Pizza Quatro Queijos',
     description: 'Molho de tomate, mussarela, provolone, parmesão, gorgonzola e orégano.',
     price: 45.9,
-    image: 'https://img.freepik.com/premium-photo/homemade-four-cheese-pizza-wooden-table_89816-19642.jpg',
+    image: '/lovable-uploads/d02b2ecc-8a23-42cc-a9d1-68bc14da83ce.png',
     categoryId: 'traditional',
   },
   {
