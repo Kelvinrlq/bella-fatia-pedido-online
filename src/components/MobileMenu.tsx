@@ -1,94 +1,77 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { X, Phone, MapPin, Clock, Instagram, Facebook } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
+import { X, MapPin, Phone } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+interface Category {
+  id: string;
+  name: string;
+}
 
 interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
+  categories: Category[];
   onCategoryClick: (categoryId: string) => void;
-  categories: { id: string; name: string }[];
 }
 
-const MobileMenu: React.FC<MobileMenuProps> = ({ 
-  isOpen, 
+const MobileMenu: React.FC<MobileMenuProps> = ({
+  isOpen,
   onClose,
-  onCategoryClick,
-  categories
+  categories,
+  onCategoryClick
 }) => {
-  if (!isOpen) return null;
+  const handleCategoryClick = (categoryId: string) => {
+    onCategoryClick(categoryId);
+    onClose();
+  };
 
   return (
-    <motion.div 
-      className="fixed inset-0 z-50 bg-black bg-opacity-50"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      onClick={onClose}
+    <motion.div
+      initial={{ x: '-100%' }}
+      animate={{ x: isOpen ? 0 : '-100%' }}
+      exit={{ x: '-100%' }}
+      transition={{ type: 'spring', damping: 20, stiffness: 100 }}
+      className="fixed top-0 left-0 h-full w-80 bg-white shadow-lg z-50 overflow-y-auto"
     >
-      <motion.div 
-        className="absolute top-0 left-0 w-72 h-full bg-white shadow-lg overflow-auto"
-        initial={{ x: -300 }}
-        animate={{ x: 0 }}
-        exit={{ x: -300 }}
-        transition={{ type: 'tween' }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex justify-between items-center p-4 bg-pizza text-white">
-          <h2 className="font-semibold text-lg">Bella Fatia</h2>
-          <button onClick={onClose}>
+      <div className="p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-bold text-pizza-contrast">Menu</h2>
+          <button
+            onClick={onClose}
+            className="p-2 text-gray-500 hover:text-gray-700"
+          >
             <X size={24} />
           </button>
         </div>
-        
-        <div className="p-4">
-          <h3 className="font-medium mb-2">Categorias</h3>
-          <ul className="space-y-1">
-            {categories.map(category => (
-              <li key={category.id}>
-                <button
-                  onClick={() => {
-                    onCategoryClick(category.id);
-                    onClose();
-                  }}
-                  className="w-full text-left py-2 px-3 rounded-md hover:bg-gray-100 transition-colors"
-                >
-                  {category.name}
-                </button>
-              </li>
-            ))}
-          </ul>
-          
-          <Separator className="my-4" />
-          
-          <div className="space-y-4">
-            <div className="flex items-center">
-              <Phone size={18} className="mr-2 text-pizza" />
-              <span>(67) 98483-7419</span>
-            </div>
-            <div className="flex items-start">
-              <MapPin size={18} className="mr-2 flex-shrink-0 text-pizza" />
-              <span>Av. Exemplo, 1234, Centro, Campo Grande - MS</span>
-            </div>
-            <div className="flex items-center">
-              <Clock size={18} className="mr-2 text-pizza" />
-              <span>Seg-Dom: 18h às 23h</span>
-            </div>
+
+        <div className="mb-6">
+          <div className="flex items-center text-gray-600 mb-2">
+            <MapPin size={16} className="mr-2" />
+            <span className="text-sm">R. América, 438 - Centro, Corumbá - MS</span>
           </div>
-          
-          <Separator className="my-4" />
-          
-          <div className="flex space-x-4">
-            <a href="#" className="p-2 bg-gray-100 rounded-full">
-              <Instagram size={20} className="text-pizza" />
-            </a>
-            <a href="#" className="p-2 bg-gray-100 rounded-full">
-              <Facebook size={20} className="text-pizza" />
-            </a>
+          <div className="flex items-center text-gray-600">
+            <Phone size={16} className="mr-2" />
+            <span className="text-sm">(67) 3231-1234</span>
           </div>
         </div>
-      </motion.div>
+
+        <div>
+          <h3 className="text-lg font-semibold mb-4 text-pizza-contrast">Categorias</h3>
+          <div className="space-y-2">
+            {categories.map((category) => (
+              <button
+                key={category.id}
+                onClick={() => handleCategoryClick(category.id)}
+                className="w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-pizza/10 hover:text-pizza transition-colors"
+              >
+                {category.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
     </motion.div>
   );
 };
