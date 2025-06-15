@@ -45,7 +45,7 @@ export const products = [
     name: 'Pizza Portuguesa',
     description: 'Molho de tomate, mussarela, presunto, ovos, cebola, azeitona e orégano.',
     price: 48.9,
-    image: 'https://www.sabornamesa.com.br/media/k2/items/cache/9b2c4b44fb86522964124ed80d03c5e8_XL.jpg',
+    image: '/lovable-uploads/619388cf-18bd-41bf-9d52-1d9d32e89de0.png',
     categoryId: 'traditional',
   },
   {
