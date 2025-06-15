@@ -21,14 +21,14 @@ const CategoryMenu: React.FC<CategoryMenuProps> = ({
 }) => {
   return (
     <div className="bg-white sticky top-16 z-30 border-b">
-      <ScrollArea className="w-full whitespace-nowrap">
-        <div className="flex space-x-1 p-2">
+      <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+        <div className="flex space-x-2 p-4 min-w-max">
           {categories.map((category) => (
             <button
               key={category.id}
               onClick={() => setActiveCategory(category.id)}
               className={cn(
-                "px-4 py-2 text-sm font-medium rounded-full transition-colors",
+                "px-4 py-2 text-sm font-medium rounded-full transition-colors whitespace-nowrap flex-shrink-0",
                 activeCategory === category.id
                   ? "bg-pizza text-white"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -38,7 +38,7 @@ const CategoryMenu: React.FC<CategoryMenuProps> = ({
             </button>
           ))}
         </div>
-      </ScrollArea>
+      </div>
     </div>
   );
 };
