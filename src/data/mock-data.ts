@@ -37,7 +37,7 @@ export const products = [
     name: 'Pizza Frango com Catupiry',
     description: 'Molho de tomate, mussarela, frango desfiado, catupiry e orégano.',
     price: 47.9,
-    image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=1000&auto=format&fit=crop',
+    image: '/lovable-uploads/26361bb4-e105-4ebb-a477-b178c0b6f55d.png',
     categoryId: 'traditional',
   },
   {
