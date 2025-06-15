@@ -5,21 +5,21 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 const banners = [
   {
     id: 1,
-    image: "/lovable-uploads/de014fcd-7fe6-4274-a67a-cd47cd7c366c.png",
-    title: "Pizza Tradicional",
-    description: "Experimente nossas pizzas tradicionais"
-  },
-  {
-    id: 2,
-    image: "/lovable-uploads/824851ab-f21b-4313-b2a5-c18ba91c6036.png",
+    image: "/lovable-uploads/71d38120-aa29-4182-9d66-78574376020a.png",
     title: "Nosso Delivery Tá ON",
     description: "Faça seu pedido: (12)3456-7890"
   },
   {
+    id: 2,
+    image: "/lovable-uploads/31dcc8d7-824d-4b9c-ac26-b8d8ee1809d6.png",
+    title: "Qual a Sua Metade?",
+    description: "Escolha seus dois favoritos"
+  },
+  {
     id: 3,
-    image: "/lovable-uploads/72579abf-ad8e-43c2-b4d7-9c414f4e6d0f.png",
-    title: "Combo Família",
-    description: "2 pizzas grandes + refrigerante 2L"
+    image: "/lovable-uploads/43e0ff55-4309-498f-ad05-5cded51afb5f.png",
+    title: "Promoção Dia da Pizza",
+    description: "Apenas R$ 39,90"
   }
 ];
 
@@ -58,7 +58,7 @@ const Banner: React.FC = () => {
               alt={banner.title} 
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-black bg-opacity-40 flex flex-col items-start justify-end p-4 md:p-8">
+            <div className="absolute inset-0 bg-black bg-opacity-20 flex flex-col items-start justify-end p-4 md:p-8">
               <h2 className="text-white text-xl md:text-3xl font-bold">{banner.title}</h2>
               <p className="text-white text-sm md:text-base">{banner.description}</p>
             </div>
