@@ -61,7 +61,7 @@ export const products = [
     name: 'Pizza Bella Especial',
     description: 'Molho de tomate, mussarela, calabresa, bacon, cheddar, cebola caramelizada e orégano.',
     price: 55.9,
-    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQrVFfH-jcuXPl4aPl1SjaXnILpBjlrpp5uGg&usqp=CAU',
+    image: '/lovable-uploads/41d1374f-1ecf-46b8-a432-3e148943a7a1.png',
     categoryId: 'special',
   },
   {
