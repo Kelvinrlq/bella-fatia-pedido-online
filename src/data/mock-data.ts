@@ -21,7 +21,7 @@ export const products = [
     name: 'Pizza Calabresa',
     description: 'Molho de tomate, mussarela, calabresa fatiada, cebola e orégano.',
     price: 42.9,
-    image: '/lovable-uploads/72579abf-ad8e-43c2-b4d7-9c414f4e6d0f.png',
+    image: '/lovable-uploads/2e49ee8c-c135-4475-a689-45fce13a49db.png',
     categoryId: 'traditional',
   },
   {
