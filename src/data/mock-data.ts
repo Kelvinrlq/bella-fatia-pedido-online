@@ -85,7 +85,7 @@ export const products = [
     name: 'Pizza Chocolate com Morango',
     description: 'Chocolate ao leite, morangos fatiados e granulado.',
     price: 49.9,
-    image: 'https://img.freepik.com/fotos-premium/pizza-doce-de-chocolate-com-morangos-em-fundo-preto_253158-2785.jpg',
+    image: '/lovable-uploads/7f46be9c-08bd-4c76-9237-79697d0515b9.png',
     categoryId: 'sweet',
   },
   {
