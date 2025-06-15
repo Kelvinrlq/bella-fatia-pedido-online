@@ -93,7 +93,7 @@ export const products = [
     name: 'Pizza Banana com Canela',
     description: 'Banana fatiada, leite condensado, canela em pó e açúcar.',
     price: 45.9,
-    image: 'https://www.designi.com.br/images/preview/10097659.jpg',
+    image: '/lovable-uploads/dbddc0a6-5f68-4ff2-9cc2-df7d71d88c09.png',
     categoryId: 'sweet',
   },
   {
@@ -101,7 +101,7 @@ export const products = [
     name: 'Refrigerante Cola 2L',
     description: 'Garrafa de 2 litros.',
     price: 12.9,
-    image: 'https://hiperideal.vteximg.com.br/arquivos/ids/191518/63de6cab-f634-431b-b252-fa7a9b95bd88.jpg',
+    image: '/lovable-uploads/4757d253-e8ea-4624-b14c-e447311e40fe.png',
     categoryId: 'drinks',
   },
   {
@@ -109,7 +109,7 @@ export const products = [
     name: 'Refrigerante Guaraná 2L',
     description: 'Garrafa de 2 litros.',
     price: 10.9,
-    image: 'https://hiperideal.vteximg.com.br/arquivos/ids/200526/guarana-antarctica-2l.jpg',
+    image: '/lovable-uploads/9727ea7c-e771-49e6-b8f0-d6be069691d7.png',
     categoryId: 'drinks',
   },
   {
@@ -117,7 +117,7 @@ export const products = [
     name: 'Suco Natural 500ml',
     description: 'Laranja, Limão ou Abacaxi.',
     price: 8.9,
-    image: 'https://www.dicasdemulher.com.br/wp-content/uploads/2022/10/suco-natural-de-laranja.jpg',
+    image: '/lovable-uploads/30935e9f-2a7e-425d-b9de-bff91caf8a92.png',
     categoryId: 'drinks',
   },
   {
@@ -125,7 +125,7 @@ export const products = [
     name: 'Batata Frita',
     description: 'Porção de batata frita crocante.',
     price: 19.9,
-    image: 'https://img.freepik.com/premium-photo/french-fries-bowl-isolated-white-background_79782-20.jpg',
+    image: '/lovable-uploads/8d8831c8-2831-4551-a099-d1af2001c8b8.png',
     categoryId: 'sides',
   },
   {
@@ -133,7 +133,7 @@ export const products = [
     name: 'Pão de Alho',
     description: '6 unidades de pão de alho.',
     price: 15.9,
-    image: 'https://static.itdg.com.br/images/1200-675/91e74182394f62181ef99a79b5ffb93a/353023-original.jpg',
+    image: '/lovable-uploads/d203fa31-91f2-49d2-a3a4-8b753d80e10f.png',
     categoryId: 'sides',
   },
 ];
