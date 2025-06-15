@@ -69,7 +69,7 @@ export const products = [
     name: 'Pizza Suprema',
     description: 'Molho de tomate, mussarela, pepperoni, carne moída, pimentão, cebola e azeitona.',
     price: 57.9,
-    image: 'https://www.sabornamesa.com.br/media/k2/items/cache/022a9ef59ff44c670416af081fb318ef_XL.jpg',
+    image: '/lovable-uploads/fb4ff6c8-bc53-490a-a2e8-8436520955fe.png',
     categoryId: 'special',
   },
   {
