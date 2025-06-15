@@ -13,7 +13,7 @@ export const products = [
     name: 'Pizza Margherita',
     description: 'Molho de tomate, mussarela, manjericão fresco e orégano.',
     price: 39.9,
-    image: '/lovable-uploads/de014fcd-7fe6-4274-a67a-cd47cd7c366c.png',
+    image: '/lovable-uploads/730b4970-2db5-40c6-8076-e4f2173144f2.png',
     categoryId: 'traditional',
   },
   {
