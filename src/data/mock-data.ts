@@ -101,7 +101,7 @@ export const products = [
     name: 'Refrigerante Cola 2L',
     description: 'Garrafa de 2 litros.',
     price: 12.9,
-    image: '/lovable-uploads/4757d253-e8ea-4624-b14c-e447311e40fe.png',
+    image: '/lovable-uploads/4520edd7-67bb-42b9-ad7c-b75441f77ed2.png',
     categoryId: 'drinks',
   },
   {
