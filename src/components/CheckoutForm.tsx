@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,7 +6,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { useCart } from '@/hooks/use-cart';
-import { CreditCard, Phone, MapPin } from 'lucide-react';
+import { CreditCard, Phone, MapPin, User } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 
 interface CheckoutFormProps {
@@ -34,12 +33,31 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
   });
 
   const [validationErrors, setValidationErrors] = useState({
+    nome: false,
     telefone: false,
     numero: false
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    
+    // Validação para o campo nome - não permitir números
+    if (name === 'nome') {
+      const hasNumbers = /\d/.test(value);
+      
+      if (hasNumbers) {
+        setValidationErrors(prev => ({ ...prev, nome: true }));
+        toast({
+          title: "Erro de validação",
+          description: "O nome não pode conter números",
+          variant: "destructive",
+          duration: 3000,
+        });
+        return;
+      } else {
+        setValidationErrors(prev => ({ ...prev, nome: false }));
+      }
+    }
     
     // Validação para campos que devem conter apenas números
     if (name === 'telefone' || name === 'numero') {
@@ -67,7 +85,8 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
   };
 
   const isFormValid = () => {
-    return !validationErrors.telefone && 
+    return !validationErrors.nome &&
+           !validationErrors.telefone && 
            !validationErrors.numero && 
            formData.nome && 
            formData.telefone && 
@@ -268,14 +287,18 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
       
       <div className="space-y-2">
         <Label htmlFor="nome">Nome Completo</Label>
-        <Input 
-          id="nome"
-          name="nome"
-          placeholder="Seu nome completo"
-          value={formData.nome}
-          onChange={handleInputChange}
-          required
-        />
+        <div className="flex relative">
+          <User size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <Input 
+            id="nome"
+            name="nome"
+            className={`pl-10 ${validationErrors.nome ? 'border-red-500' : ''}`}
+            placeholder="Seu nome completo"
+            value={formData.nome}
+            onChange={handleInputChange}
+            required
+          />
+        </div>
       </div>
       
       <div className="space-y-2">
