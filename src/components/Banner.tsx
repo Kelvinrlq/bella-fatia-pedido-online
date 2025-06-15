@@ -7,7 +7,7 @@ const banners = [
     id: 1,
     image: "/lovable-uploads/71d38120-aa29-4182-9d66-78574376020a.png",
     title: "Nosso Delivery Tá ON",
-    description: "Faça seu pedido: (12)3456-7890"
+    description: "R. América, 438 - Centro, Corumbá - MS"
   },
   {
     id: 2,
