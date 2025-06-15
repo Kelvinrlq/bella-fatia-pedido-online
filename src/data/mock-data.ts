@@ -53,7 +53,7 @@ export const products = [
     name: 'Pizza Vegetariana',
     description: 'Molho de tomate, mussarela, brócolis, palmito, milho, ervilha, tomate e orégano.',
     price: 46.9,
-    image: 'https://plus.unsplash.com/premium_photo-1675451537870-a21e9988890a?q=80&w=1000&auto=format&fit=crop',
+    image: '/lovable-uploads/f8404509-5d5b-44e8-a6e2-43c34c62c47e.png',
     categoryId: 'traditional',
   },
   {
