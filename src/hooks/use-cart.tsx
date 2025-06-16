@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product } from '@/components/ProductCard';
 import { toast } from 'sonner';
@@ -45,7 +44,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const existingItem = prevItems.find(item => item.product.id === product.id);
       
       if (existingItem) {
-        toast.success('Item adicionado ao carrinho');
+        toast.success('Item adicionado ao carrinho', {
+          duration: 2000, // 2 seconds
+        });
         return prevItems.map(item => 
           item.product.id === product.id 
             ? { ...item, quantity: item.quantity + 1 } 
@@ -53,7 +54,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         );
       }
       
-      toast.success('Item adicionado ao carrinho');
+      toast.success('Item adicionado ao carrinho', {
+        duration: 2000, // 2 seconds
+      });
       return [...prevItems, { product, quantity: 1 }];
     });
   };
