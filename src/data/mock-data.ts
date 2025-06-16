@@ -141,7 +141,7 @@ export const products = [
     name: 'Bala Halls',
     description: 'Bala refrescante sabores diversos.',
     price: 1.0,
-    image: '/lovable-uploads/candy-placeholder.png',
+    image: '/lovable-uploads/178fd342-d035-4a92-bde3-d089b525b42b.png',
     categoryId: 'sides',
   },
 ];
