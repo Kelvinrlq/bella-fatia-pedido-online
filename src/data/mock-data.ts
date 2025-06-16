@@ -136,4 +136,12 @@ export const products = [
     image: '/lovable-uploads/d203fa31-91f2-49d2-a3a4-8b753d80e10f.png',
     categoryId: 'sides',
   },
+  {
+    id: '17',
+    name: 'Bala Halls',
+    description: 'Bala refrescante sabores diversos.',
+    price: 1.0,
+    image: '/lovable-uploads/candy-placeholder.png',
+    categoryId: 'sides',
+  },
 ];
