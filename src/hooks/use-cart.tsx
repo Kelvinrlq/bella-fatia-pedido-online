@@ -74,12 +74,16 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   const removeItem = (productId: string) => {
     setItems(prevItems => prevItems.filter(item => item.product.id !== productId));
-    toast.info('Item removido do carrinho');
+    toast.info('Item removido do carrinho', {
+      duration: 2000, // 2 seconds
+    });
   };
   
   const clearCart = () => {
     setItems([]);
-    toast.info('Carrinho esvaziado');
+    toast.info('Carrinho esvaziado', {
+      duration: 2000, // 2 seconds
+    });
   };
   
   const totalItems = items.reduce((total, item) => total + item.quantity, 0);
