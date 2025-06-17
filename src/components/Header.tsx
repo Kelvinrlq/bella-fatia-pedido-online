@@ -34,7 +34,7 @@ const Header: React.FC<HeaderProps> = ({ isOpen, toggleCart, toggleMobileMenu, i
             <img 
               src="/lovable-uploads/4d863ce3-4852-436b-90e4-9a0516de9889.png" 
               alt="Bella Fatia Logo" 
-              className="w-12 h-12 mr-3"
+              className="w-16 h-16 mr-3"
             />
             <h1 className="text-2xl font-bold text-pizza-contrast">
               <span className="text-pizza">Bella </span>
