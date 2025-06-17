@@ -32,7 +32,7 @@ const Header: React.FC<HeaderProps> = ({ isOpen, toggleCart, toggleMobileMenu, i
           
           <div className="flex items-center">
             <img 
-              src="/lovable-uploads/e7e2c143-b711-4c0d-9046-e3f621d2e032.png" 
+              src="/lovable-uploads/4d863ce3-4852-436b-90e4-9a0516de9889.png" 
               alt="Bella Fatia Logo" 
               className="w-12 h-12 mr-3"
             />
