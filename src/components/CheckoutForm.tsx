@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,7 +7,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { useCart } from '@/hooks/use-cart';
-import { CreditCard, Phone, MapPin, User } from 'lucide-react';
+import { CreditCard, Phone, MapPin, User, Link } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 
 interface CheckoutFormProps {
@@ -19,6 +20,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
   const [loading, setLoading] = useState(false);
   const [pixData, setPixData] = useState<{qrCodeImage: string, pixCopiaECola: string, orderValue: number} | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
+  const [webhookUrl, setWebhookUrl] = useState('');
   
   const [formData, setFormData] = useState({
     nome: '',
@@ -95,6 +97,57 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
            formData.bairro;
   };
 
+  const triggerWebhook = async (orderData: any) => {
+    if (!webhookUrl) return;
+
+    try {
+      console.log('Enviando webhook para:', webhookUrl);
+      
+      const webhookPayload = {
+        orderId: orderData.id,
+        customerName: formData.nome,
+        customerPhone: formData.telefone,
+        customerAddress: `${formData.endereco}, ${formData.numero}, ${formData.bairro}${formData.complemento ? ', ' + formData.complemento : ''}`,
+        totalPrice: totalPrice,
+        paymentMethod: formData.formaPagamento,
+        items: items.map(item => ({
+          id: item.product.id,
+          name: item.product.name,
+          quantity: item.quantity,
+          price: item.product.price,
+          subtotal: item.quantity * item.product.price
+        })),
+        status: 'pending',
+        timestamp: new Date().toISOString(),
+        observations: formData.observacoes || null
+      };
+
+      await fetch(webhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        mode: 'no-cors',
+        body: JSON.stringify(webhookPayload),
+      });
+
+      console.log('Webhook enviado com sucesso');
+      toast({
+        title: "Webhook enviado",
+        description: "Notificação enviada para o sistema configurado",
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error('Erro ao enviar webhook:', error);
+      toast({
+        title: "Erro no webhook",
+        description: "Falha ao enviar notificação, mas o pedido foi processado",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -168,6 +221,9 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
             pix_expiration: new Date(Date.now() + 15 * 60 * 1000).toISOString()
           })
           .eq('id', orderData.id);
+
+        // Enviar webhook após criar o pedido PIX
+        await triggerWebhook(orderData);
           
         setPixData({
           qrCodeImage: pixResponse.qrCodeImage,
@@ -177,6 +233,42 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
         setOrderId(orderData.id);
         
       } else {
+        // Criar pedido para outros métodos de pagamento
+        const orderItems = items.map(item => ({
+          product_id: item.product.id,
+          product_name: item.product.name,
+          quantity: item.quantity,
+          price: item.product.price,
+          subtotal: item.quantity * item.product.price
+        }));
+        
+        const { data: orderData, error: orderError } = await supabase
+          .from('orders')
+          .insert({
+            customer_name: formData.nome,
+            customer_phone: formData.telefone,
+            customer_address: `${formData.endereco}, ${formData.numero}, ${formData.bairro}${formData.complemento ? ', ' + formData.complemento : ''}`,
+            total_price: totalPrice,
+            payment_method: formData.formaPagamento,
+            status: 'pending'
+          })
+          .select()
+          .single();
+          
+        if (orderError) throw orderError;
+        
+        const { error: itemsError } = await supabase
+          .from('order_items')
+          .insert(orderItems.map(item => ({
+            order_id: orderData.id,
+            ...item
+          })));
+          
+        if (itemsError) throw itemsError;
+
+        // Enviar webhook após criar o pedido
+        await triggerWebhook(orderData);
+        
         // Formato dos itens para o WhatsApp
         const itemsText = items.map(item => 
           `${item.quantity}x ${item.product.name} - R$ ${(item.quantity * item.product.price).toFixed(2)}`
@@ -416,6 +508,24 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
           value={formData.observacoes}
           onChange={handleInputChange}
         />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="webhook">URL do Webhook (opcional)</Label>
+        <div className="flex relative">
+          <Link size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <Input 
+            id="webhook" 
+            name="webhook"
+            className="pl-10"
+            placeholder="https://seu-sistema.com/webhook"
+            value={webhookUrl}
+            onChange={(e) => setWebhookUrl(e.target.value)}
+          />
+        </div>
+        <p className="text-xs text-gray-500">
+          Configure uma URL para receber notificações automáticas quando o pedido for finalizado
+        </p>
       </div>
       
       <div className="bg-gray-50 p-3 rounded-lg mb-4">
