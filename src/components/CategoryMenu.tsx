@@ -20,7 +20,7 @@ const CategoryMenu: React.FC<CategoryMenuProps> = ({
   setActiveCategory
 }) => {
   return (
-    <div className="bg-white sticky top-16 z-30 border-b">
+    <div className="bg-white sticky top-20 z-30 border-b shadow-sm">
       <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
         <div className="flex space-x-2 p-4 min-w-max">
           {categories.map((category) => (
