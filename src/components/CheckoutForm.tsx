@@ -408,7 +408,6 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
             required
           />
         </div>
-        <p className="text-xs text-gray-500">Máximo 100 caracteres</p>
       </div>
       
       <div className="space-y-2">
@@ -426,7 +425,6 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
             required
           />
         </div>
-        <p className="text-xs text-gray-500">Máximo 11 dígitos</p>
       </div>
       
       <div className="space-y-2">
@@ -444,7 +442,6 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
             required
           />
         </div>
-        <p className="text-xs text-gray-500">Máximo 200 caracteres</p>
       </div>
       
       <div className="grid grid-cols-2 gap-2">
@@ -460,7 +457,6 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
             maxLength={10}
             required
           />
-          <p className="text-xs text-gray-500">Máximo 10 caracteres</p>
         </div>
         <div className="space-y-2">
           <Label htmlFor="bairro">Bairro</Label>
@@ -473,7 +469,6 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
             maxLength={50}
             required
           />
-          <p className="text-xs text-gray-500">Máximo 50 caracteres</p>
         </div>
       </div>
       
@@ -487,7 +482,6 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
           onChange={handleInputChange}
           maxLength={100}
         />
-        <p className="text-xs text-gray-500">Máximo 100 caracteres</p>
       </div>
       
       <div className="space-y-2">
@@ -525,7 +519,6 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
             onChange={handleInputChange}
             maxLength={10}
           />
-          <p className="text-xs text-gray-500">Máximo 10 caracteres</p>
         </div>
       )}
       
@@ -539,7 +532,6 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
           onChange={handleInputChange}
           maxLength={500}
         />
-        <p className="text-xs text-gray-500">Máximo 500 caracteres</p>
       </div>
 
       <div className="space-y-2">
@@ -557,7 +549,7 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
           />
         </div>
         <p className="text-xs text-gray-500">
-          Configure uma URL para receber notificações automáticas quando o pedido for finalizado (máximo 500 caracteres)
+          Configure uma URL para receber notificações automáticas quando o pedido for finalizado
         </p>
       </div>
       
