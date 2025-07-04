@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -76,6 +75,23 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
         return;
       } else {
         setValidationErrors(prev => ({ ...prev, [name]: false }));
+      }
+      
+      // Validação específica para telefone - limite de 11 dígitos
+      if (name === 'telefone') {
+        const numbersOnly = value.replace(/[^0-9]/g, '');
+        if (numbersOnly.length > 11) {
+          setValidationErrors(prev => ({ ...prev, telefone: true }));
+          toast({
+            title: "Erro de validação",
+            description: "O telefone deve ter no máximo 11 dígitos",
+            variant: "destructive",
+            duration: 3000,
+          });
+          return;
+        } else {
+          setValidationErrors(prev => ({ ...prev, telefone: false }));
+        }
       }
     }
     
@@ -404,9 +420,11 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
             placeholder="(99) 99999-9999"
             value={formData.telefone}
             onChange={handleInputChange}
+            maxLength={15}
             required
           />
         </div>
+        <p className="text-xs text-gray-500">Máximo 11 dígitos</p>
       </div>
       
       <div className="space-y-2">
