@@ -404,9 +404,11 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
             placeholder="Seu nome completo"
             value={formData.nome}
             onChange={handleInputChange}
+            maxLength={100}
             required
           />
         </div>
+        <p className="text-xs text-gray-500">Máximo 100 caracteres</p>
       </div>
       
       <div className="space-y-2">
@@ -438,9 +440,11 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
             placeholder="Rua, Avenida, etc."
             value={formData.endereco}
             onChange={handleInputChange}
+            maxLength={200}
             required
           />
         </div>
+        <p className="text-xs text-gray-500">Máximo 200 caracteres</p>
       </div>
       
       <div className="grid grid-cols-2 gap-2">
@@ -453,8 +457,10 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
             placeholder="123"
             value={formData.numero}
             onChange={handleInputChange}
+            maxLength={10}
             required
           />
+          <p className="text-xs text-gray-500">Máximo 10 caracteres</p>
         </div>
         <div className="space-y-2">
           <Label htmlFor="bairro">Bairro</Label>
@@ -464,8 +470,10 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
             placeholder="Seu bairro"
             value={formData.bairro}
             onChange={handleInputChange}
+            maxLength={50}
             required
           />
+          <p className="text-xs text-gray-500">Máximo 50 caracteres</p>
         </div>
       </div>
       
@@ -477,7 +485,9 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
           placeholder="Apto, bloco, referência, etc."
           value={formData.complemento}
           onChange={handleInputChange}
+          maxLength={100}
         />
+        <p className="text-xs text-gray-500">Máximo 100 caracteres</p>
       </div>
       
       <div className="space-y-2">
@@ -513,7 +523,9 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
             placeholder="R$ 50,00"
             value={formData.troco}
             onChange={handleInputChange}
+            maxLength={10}
           />
+          <p className="text-xs text-gray-500">Máximo 10 caracteres</p>
         </div>
       )}
       
@@ -525,7 +537,9 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
           placeholder="Instruções especiais para o pedido ou entrega"
           value={formData.observacoes}
           onChange={handleInputChange}
+          maxLength={500}
         />
+        <p className="text-xs text-gray-500">Máximo 500 caracteres</p>
       </div>
 
       <div className="space-y-2">
@@ -539,10 +553,11 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
             placeholder="https://seu-sistema.com/webhook"
             value={webhookUrl}
             onChange={(e) => setWebhookUrl(e.target.value)}
+            maxLength={500}
           />
         </div>
         <p className="text-xs text-gray-500">
-          Configure uma URL para receber notificações automáticas quando o pedido for finalizado
+          Configure uma URL para receber notificações automáticas quando o pedido for finalizado (máximo 500 caracteres)
         </p>
       </div>
       
