@@ -68,29 +68,30 @@ const Banner: React.FC = () => {
       
       <button 
         onClick={prevSlide}
-        className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 rounded-full p-1 text-white z-10"
+        className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 rounded-full p-1 text-white z-10 focus:ring-2 focus:ring-pizza focus:ring-offset-2 focus:bg-opacity-70"
         aria-label="Banner anterior"
       >
-        <ChevronLeft size={20} />
+        <ChevronLeft size={20} aria-hidden="true" />
       </button>
       
       <button 
         onClick={nextSlide}
-        className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 rounded-full p-1 text-white z-10"
+        className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 rounded-full p-1 text-white z-10 focus:ring-2 focus:ring-pizza focus:ring-offset-2 focus:bg-opacity-70"
         aria-label="Próximo banner"
       >
-        <ChevronRight size={20} />
+        <ChevronRight size={20} aria-hidden="true" />
       </button>
       
       <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
         {banners.map((_, index) => (
           <button
             key={index}
-            className={`w-2 h-2 rounded-full ${
+            className={`w-2 h-2 rounded-full focus:ring-2 focus:ring-pizza focus:ring-offset-2 ${
               index === currentBanner ? 'bg-pizza' : 'bg-white bg-opacity-50'
             }`}
             onClick={() => setCurrentBanner(index)}
             aria-label={`Ir para o banner ${index + 1}`}
+            aria-current={index === currentBanner ? 'true' : 'false'}
           />
         ))}
       </div>

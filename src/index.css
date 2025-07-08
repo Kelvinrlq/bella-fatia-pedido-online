@@ -110,6 +110,18 @@
     height: 6px;
     width: 6px;
   }
+
+  /* Melhorias de acessibilidade para foco */
+  :focus-visible {
+    outline: 2px solid #FF6600;
+    outline-offset: 2px;
+  }
+
+  /* Para botões que já têm estilo focus:ring */
+  button:focus:not(:focus-visible),
+  a:focus:not(:focus-visible) {
+    outline: none;
+  }
 }
 
 .cart-bubble {

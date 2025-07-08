@@ -180,7 +180,6 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
     
     try {
       if (formData.formaPagamento === 'pix') {
-        // Preparar os items para o pedido
         const orderItems = items.map(item => ({
           product_id: item.product.id,
           product_name: item.product.name,
@@ -238,7 +237,6 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
           })
           .eq('id', orderData.id);
 
-        // Enviar webhook após criar o pedido PIX
         await triggerWebhook(orderData);
           
         setPixData({
@@ -249,7 +247,6 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
         setOrderId(orderData.id);
         
       } else {
-        // Criar pedido para outros métodos de pagamento
         const orderItems = items.map(item => ({
           product_id: item.product.id,
           product_name: item.product.name,
@@ -282,10 +279,8 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
           
         if (itemsError) throw itemsError;
 
-        // Enviar webhook após criar o pedido
         await triggerWebhook(orderData);
         
-        // Formato dos itens para o WhatsApp
         const itemsText = items.map(item => 
           `${item.quantity}x ${item.product.name} - R$ ${(item.quantity * item.product.price).toFixed(2)}`
         ).join('\n');
@@ -339,7 +334,6 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
     }
   };
 
-  // Se temos um QR code Pix para mostrar
   if (pixData) {
     return (
       <div className="p-4 space-y-6 flex flex-col items-center">
@@ -361,6 +355,8 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
               onClick={() => navigator.clipboard.writeText(pixData.pixCopiaECola)}
               variant="outline"
               size="sm"
+              className="focus:ring-2 focus:ring-pizza focus:ring-offset-2"
+              aria-label="Copiar código PIX"
             >
               Copiar
             </Button>
@@ -373,14 +369,16 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
             onClick={() => {
               window.location.href = `/status-pedido/${orderId}`;
             }}
-            className="w-full bg-pizza hover:bg-pizza-dark"
+            className="w-full bg-pizza hover:bg-pizza-dark focus:ring-2 focus:ring-pizza focus:ring-offset-2"
+            aria-label="Verificar status do pedido"
           >
             Verificar Status do Pedido
           </Button>
           <Button
             onClick={onCancel}
             variant="outline"
-            className="w-full border-gray-200 text-gray-500"
+            className="w-full border-gray-200 text-gray-500 focus:ring-2 focus:ring-pizza focus:ring-offset-2"
+            aria-label="Voltar para a loja"
           >
             Voltar para a Loja
           </Button>
@@ -562,10 +560,21 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
       
       <Button 
         type="submit" 
-        className="w-full bg-pizza hover:bg-pizza-dark"
+        className="w-full bg-pizza hover:bg-pizza-dark focus:ring-2 focus:ring-pizza focus:ring-offset-2"
         disabled={loading || !isFormValid()}
+        aria-busy={loading}
+        aria-label={loading ? "Processando pedido..." : (
+          formData.formaPagamento === 'pix' 
+            ? `Gerar PIX no valor de ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalPrice)}` 
+            : "Enviar pedido pelo WhatsApp"
+        )}
       >
-        {loading ? "Processando..." : (
+        {loading ? (
+          <>
+            <span className="sr-only" aria-hidden="true">Carregando...</span>
+            Processando...
+          </>
+        ) : (
           formData.formaPagamento === 'pix' 
             ? `Gerar PIX - R$ ${totalPrice.toFixed(2)}` 
             : "Enviar pedido pelo WhatsApp"

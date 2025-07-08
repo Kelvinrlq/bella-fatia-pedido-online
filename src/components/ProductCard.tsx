@@ -47,9 +47,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <Button
             onClick={() => addItem(product)}
             size="sm"
-            className="bg-pizza hover:bg-pizza-dark text-white"
+            className="bg-pizza hover:bg-pizza-dark text-white focus:ring-2 focus:ring-pizza focus:ring-offset-2"
+            aria-label={`Adicionar ${product.name} ao carrinho`}
           >
-            <Plus size={16} className="mr-1" /> Adicionar
+            <Plus size={16} className="mr-1" aria-hidden="true" /> Adicionar
           </Button>
         </div>
       </div>

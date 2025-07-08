@@ -127,54 +127,6 @@ export type Database = {
         }
         Relationships: []
       }
-      pedidos: {
-        Row: {
-          bairro: string
-          complemento: string | null
-          data_hora: string | null
-          endereco: string
-          forma_pagamento: string
-          id: number
-          nome_cliente: string
-          numero: string
-          observacoes: string | null
-          status: string | null
-          telefone: string
-          troco_para: number | null
-          valor_total: number
-        }
-        Insert: {
-          bairro: string
-          complemento?: string | null
-          data_hora?: string | null
-          endereco: string
-          forma_pagamento: string
-          id?: number
-          nome_cliente: string
-          numero: string
-          observacoes?: string | null
-          status?: string | null
-          telefone: string
-          troco_para?: number | null
-          valor_total: number
-        }
-        Update: {
-          bairro?: string
-          complemento?: string | null
-          data_hora?: string | null
-          endereco?: string
-          forma_pagamento?: string
-          id?: number
-          nome_cliente?: string
-          numero?: string
-          observacoes?: string | null
-          status?: string | null
-          telefone?: string
-          troco_para?: number | null
-          valor_total?: number
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never

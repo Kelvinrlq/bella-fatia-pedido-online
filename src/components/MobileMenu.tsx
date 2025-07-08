@@ -29,6 +29,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
 
   return (
     <motion.div
+      id="mobile-menu"
       initial={{ x: '-100%' }}
       animate={{ x: isOpen ? 0 : '-100%' }}
       exit={{ x: '-100%' }}

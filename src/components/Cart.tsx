@@ -51,22 +51,33 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
         exit="hidden"
         transition={{ type: 'tween', duration: 0.3 }}
         onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cart-title"
       >
         <div className="flex flex-col h-full">
           {/* Cabeçalho do Carrinho */}
           <div className="flex items-center justify-between p-4 border-b">
             {isCheckout ? (
-              <button onClick={toggleCheckout} className="text-pizza">
-                <X size={24} className="mr-2" /> Voltar ao carrinho
+              <button 
+                onClick={toggleCheckout} 
+                className="text-pizza focus:ring-2 focus:ring-pizza focus:ring-offset-2 rounded-md p-1"
+                aria-label="Voltar ao carrinho"
+              >
+                <X size={24} className="mr-2" aria-hidden="true" /> Voltar ao carrinho
               </button>
             ) : (
               <div className="flex items-center">
-                <ShoppingCart size={20} className="text-pizza mr-2" />
-                <h2 className="text-lg font-semibold">Seu pedido</h2>
+                <ShoppingCart size={20} className="text-pizza mr-2" aria-hidden="true" />
+                <h2 id="cart-title" className="text-lg font-semibold">Seu pedido</h2>
               </div>
             )}
-            <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-              <X size={20} />
+            <button 
+              onClick={onClose} 
+              className="text-gray-500 hover:text-gray-700 focus:ring-2 focus:ring-pizza focus:ring-offset-2 rounded-md p-1"
+              aria-label="Fechar carrinho"
+            >
+              <X size={20} aria-hidden="true" />
             </button>
           </div>
           
@@ -84,7 +95,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
                 >
                   {items.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full p-4">
-                      <ShoppingCart size={64} className="text-gray-300 mb-4" />
+                      <ShoppingCart size={64} className="text-gray-300 mb-4" aria-hidden="true" />
                       <p className="text-gray-500 text-center">
                         Seu carrinho está vazio. Adicione alguns itens deliciosos!
                       </p>
@@ -112,9 +123,10 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
                               <h3 className="font-medium text-sm">{item.product.name}</h3>
                               <button 
                                 onClick={() => removeItem(item.product.id)}
-                                className="text-gray-400 hover:text-red-500"
+                                className="text-gray-400 hover:text-red-500 focus:ring-2 focus:ring-pizza focus:ring-offset-2 rounded-md p-1"
+                                aria-label={`Remover ${item.product.name} do carrinho`}
                               >
-                                <Trash size={14} />
+                                <Trash size={14} aria-hidden="true" />
                               </button>
                             </div>
                             <div className="mt-1 flex items-center justify-between">
@@ -122,16 +134,25 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
                                 <button
                                   onClick={() => updateItemQuantity(item.product.id, item.quantity - 1)}
                                   disabled={item.quantity <= 1}
-                                  className="px-2 py-1 text-gray-500 disabled:text-gray-300"
+                                  className="px-2 py-1 text-gray-500 disabled:text-gray-300 focus:ring-2 focus:ring-pizza focus:ring-offset-2 rounded-l-md"
+                                  aria-label={`Diminuir quantidade de ${item.product.name}`}
+                                  aria-disabled={item.quantity <= 1}
                                 >
-                                  <Minus size={14} />
+                                  <Minus size={14} aria-hidden="true" />
                                 </button>
-                                <span className="px-2 text-sm">{item.quantity}</span>
+                                <span 
+                                  className="px-2 text-sm"
+                                  aria-live="polite"
+                                  aria-label={`Quantidade: ${item.quantity}`}
+                                >
+                                  {item.quantity}
+                                </span>
                                 <button
                                   onClick={() => updateItemQuantity(item.product.id, item.quantity + 1)}
-                                  className="px-2 py-1 text-gray-500"
+                                  className="px-2 py-1 text-gray-500 focus:ring-2 focus:ring-pizza focus:ring-offset-2 rounded-r-md"
+                                  aria-label={`Aumentar quantidade de ${item.product.name}`}
                                 >
-                                  <Plus size={14} />
+                                  <Plus size={14} aria-hidden="true" />
                                 </button>
                               </div>
                               <span className="text-sm font-semibold">
@@ -183,14 +204,16 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
               <div className="space-y-2">
                 <Button
                   onClick={toggleCheckout}
-                  className="w-full bg-pizza hover:bg-pizza-dark"
+                  className="w-full bg-pizza hover:bg-pizza-dark focus:ring-2 focus:ring-pizza focus:ring-offset-2"
+                  aria-label={`Finalizar pedido no valor de ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalPrice)}`}
                 >
                   Finalizar pedido
                 </Button>
                 <Button
                   onClick={clearCart}
                   variant="outline"
-                  className="w-full border-gray-200 text-gray-500"
+                  className="w-full border-gray-200 text-gray-500 focus:ring-2 focus:ring-pizza focus:ring-offset-2"
+                  aria-label={`Limpar carrinho com ${items.length} ${items.length === 1 ? 'item' : 'itens'}`}
                 >
                   Limpar carrinho
                 </Button>
