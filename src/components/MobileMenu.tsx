@@ -1,8 +1,10 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { X, MapPin, Phone } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { X, MapPin, Phone, User, LogOut } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/use-auth';
 
 interface Category {
   id: string;
@@ -22,8 +24,15 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
   categories,
   onCategoryClick
 }) => {
+  const { user, signOut } = useAuth();
+
   const handleCategoryClick = (categoryId: string) => {
     onCategoryClick(categoryId);
+    onClose();
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
     onClose();
   };
 
@@ -41,19 +50,64 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
           <h2 className="text-xl font-bold text-pizza-contrast">Menu</h2>
           <button
             onClick={onClose}
-            className="p-2 text-gray-500 hover:text-gray-700"
+            className="p-2 text-gray-500 hover:text-gray-700 focus:ring-2 focus:ring-pizza focus:ring-offset-2 rounded-md"
+            aria-label="Fechar menu"
           >
-            <X size={24} />
+            <X size={24} aria-hidden="true" />
           </button>
+        </div>
+
+        {/* Auth section for mobile */}
+        <div className="mb-6 pb-6 border-b border-gray-200">
+          {user ? (
+            <div className="space-y-3">
+              <p className="text-sm text-gray-600">
+                Olá, {user.email?.split('@')[0]}!
+              </p>
+              <Button
+                onClick={handleSignOut}
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start text-pizza-contrast hover:bg-pizza/10 focus:ring-2 focus:ring-pizza focus:ring-offset-2"
+                aria-label="Sair da conta"
+              >
+                <LogOut size={16} className="mr-2" aria-hidden="true" />
+                Sair
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Link to="/login" onClick={onClose}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start text-pizza-contrast hover:bg-pizza/10 focus:ring-2 focus:ring-pizza focus:ring-offset-2"
+                  aria-label="Fazer login"
+                >
+                  <User size={16} className="mr-2" aria-hidden="true" />
+                  Entrar
+                </Button>
+              </Link>
+              <Link to="/cadastro" onClick={onClose}>
+                <Button
+                  size="sm"
+                  className="w-full bg-pizza hover:bg-pizza-dark text-white focus:ring-2 focus:ring-pizza focus:ring-offset-2"
+                  aria-label="Criar conta"
+                >
+                  Cadastrar
+                </Button>
+              </Link>
+            </div>
+          )}
         </div>
 
         <div className="mb-6">
           <div className="flex items-center text-gray-600 mb-2">
-            <MapPin size={16} className="mr-2" />
+            <MapPin size={16} className="mr-2" aria-hidden="true" />
             <span className="text-sm">R. América, 438 - Centro, Corumbá - MS</span>
           </div>
           <div className="flex items-center text-gray-600">
-            <Phone size={16} className="mr-2" />
+            <Phone size={16} className="mr-2" aria-hidden="true" />
             <span className="text-sm">(67) 3231-1234</span>
           </div>
         </div>
@@ -65,7 +119,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
               <button
                 key={category.id}
                 onClick={() => handleCategoryClick(category.id)}
-                className="w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-pizza/10 hover:text-pizza transition-colors"
+                className="w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-pizza/10 hover:text-pizza transition-colors focus:ring-2 focus:ring-pizza focus:ring-offset-2"
               >
                 {category.name}
               </button>

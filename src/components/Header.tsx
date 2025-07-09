@@ -1,9 +1,11 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ShoppingCart, Menu, X } from 'lucide-react';
+import { ShoppingCart, Menu, X, User, LogOut } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/hooks/use-cart';
+import { useAuth } from '@/hooks/use-auth';
 
 interface HeaderProps {
   isOpen: boolean;
@@ -14,7 +16,12 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ isOpen, toggleCart, toggleMobileMenu, isMobileMenuOpen }) => {
   const { totalItems } = useCart();
+  const { user, signOut } = useAuth();
   
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
   return (
     <header className="sticky top-0 z-40 w-full bg-white shadow-md">
       <div className="container-pizza py-4 flex justify-between items-center">
@@ -33,7 +40,7 @@ const Header: React.FC<HeaderProps> = ({ isOpen, toggleCart, toggleMobileMenu, i
             )}
           </button>
           
-          <div className="flex items-center">
+          <Link to="/" className="flex items-center">
             <img 
               src="/lovable-uploads/4d863ce3-4852-436b-90e4-9a0516de9889.png" 
               alt="Bella Fatia Logo" 
@@ -43,29 +50,74 @@ const Header: React.FC<HeaderProps> = ({ isOpen, toggleCart, toggleMobileMenu, i
               <span className="text-pizza">Bella </span>
               Fatia
             </h1>
-          </div>
+          </Link>
         </div>
 
-        <Button 
-          onClick={toggleCart}
-          variant="ghost" 
-          className="relative p-2 text-pizza-contrast hover:bg-pizza/10 focus:ring-2 focus:ring-pizza focus:ring-offset-2"
-          aria-label={`Abrir carrinho com ${totalItems} ${totalItems === 1 ? 'item' : 'itens'}`}
-          aria-expanded={isOpen}
-          aria-haspopup="dialog"
-        >
-          <ShoppingCart size={24} aria-hidden="true" />
-          {totalItems > 0 && (
-            <motion.span 
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              className="cart-bubble absolute -top-2 -right-2 bg-pizza text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
-              aria-hidden="true"
-            >
-              {totalItems}
-            </motion.span>
+        <div className="flex items-center space-x-4">
+          {/* Auth buttons */}
+          {user ? (
+            <div className="hidden sm:flex items-center space-x-2">
+              <span className="text-sm text-gray-600">
+                Olá, {user.email?.split('@')[0]}!
+              </span>
+              <Button
+                onClick={handleSignOut}
+                variant="ghost"
+                size="sm"
+                className="text-pizza-contrast hover:bg-pizza/10 focus:ring-2 focus:ring-pizza focus:ring-offset-2"
+                aria-label="Sair da conta"
+              >
+                <LogOut size={16} className="mr-1" aria-hidden="true" />
+                Sair
+              </Button>
+            </div>
+          ) : (
+            <div className="hidden sm:flex items-center space-x-2">
+              <Link to="/login">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-pizza-contrast hover:bg-pizza/10 focus:ring-2 focus:ring-pizza focus:ring-offset-2"
+                  aria-label="Fazer login"
+                >
+                  <User size={16} className="mr-1" aria-hidden="true" />
+                  Entrar
+                </Button>
+              </Link>
+              <Link to="/cadastro">
+                <Button
+                  size="sm"
+                  className="bg-pizza hover:bg-pizza-dark text-white focus:ring-2 focus:ring-pizza focus:ring-offset-2"
+                  aria-label="Criar conta"
+                >
+                  Cadastrar
+                </Button>
+              </Link>
+            </div>
           )}
-        </Button>
+
+          {/* Cart button */}
+          <Button 
+            onClick={toggleCart}
+            variant="ghost" 
+            className="relative p-2 text-pizza-contrast hover:bg-pizza/10 focus:ring-2 focus:ring-pizza focus:ring-offset-2"
+            aria-label={`Abrir carrinho com ${totalItems} ${totalItems === 1 ? 'item' : 'itens'}`}
+            aria-expanded={isOpen}
+            aria-haspopup="dialog"
+          >
+            <ShoppingCart size={24} aria-hidden="true" />
+            {totalItems > 0 && (
+              <motion.span 
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="cart-bubble absolute -top-2 -right-2 bg-pizza text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
+                aria-hidden="true"
+              >
+                {totalItems}
+              </motion.span>
+            )}
+          </Button>
+        </div>
       </div>
     </header>
   );
