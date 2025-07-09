@@ -18,33 +18,61 @@ const Login = () => {
 
   useEffect(() => {
     if (user) {
+      console.log('User logged in, redirecting to home');
       navigate('/');
     }
   }, [user, navigate]);
+
+  const getErrorMessage = (error: any) => {
+    if (!error) return 'Erro desconhecido';
+    
+    const message = error.message || '';
+    
+    if (message.includes('Invalid login credentials')) {
+      return 'Email ou senha incorretos. Verifique seus dados e tente novamente.';
+    }
+    
+    if (message.includes('Email not confirmed')) {
+      return 'Você precisa confirmar seu email antes de fazer login. Verifique sua caixa de entrada.';
+    }
+    
+    if (message.includes('Too many requests')) {
+      return 'Muitas tentativas de login. Aguarde alguns minutos e tente novamente.';
+    }
+    
+    if (message.includes('User not found')) {
+      return 'Usuário não encontrado. Verifique se você já criou uma conta.';
+    }
+
+    return 'Erro ao fazer login. Tente novamente ou entre em contato conosco.';
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
+    console.log('Login form submitted with:', { email });
+
     try {
       const { error } = await signIn(email, password);
       
       if (error) {
+        console.error('Login error:', error);
         toast({
           title: "Erro no login",
-          description: error.message === 'Invalid login credentials' 
-            ? "Email ou senha incorretos" 
-            : "Erro ao fazer login. Tente novamente.",
+          description: getErrorMessage(error),
           variant: "destructive",
         });
       } else {
+        console.log('Login successful');
         toast({
           title: "Login realizado com sucesso!",
           description: "Bem-vindo de volta à Bella Fatia!",
         });
-        navigate('/');
+        // Navigation will be handled by useEffect when user state changes
       }
     } catch (error) {
+      console.error('Login catch error:', error);
       toast({
         title: "Erro no login",
         description: "Erro inesperado. Tente novamente.",

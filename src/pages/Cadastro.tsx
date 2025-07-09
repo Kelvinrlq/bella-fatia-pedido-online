@@ -19,6 +19,7 @@ const Cadastro = () => {
 
   useEffect(() => {
     if (user) {
+      console.log('User already logged in, redirecting to home');
       navigate('/');
     }
   }, [user, navigate]);
@@ -55,6 +56,26 @@ const Cadastro = () => {
     return true;
   };
 
+  const getErrorMessage = (error: any) => {
+    if (!error) return 'Erro desconhecido';
+    
+    const message = error.message || '';
+    
+    if (message.includes('already registered') || message.includes('User already registered')) {
+      return 'Este email já possui uma conta. Faça login ou use outro email.';
+    }
+    
+    if (message.includes('Password should be at least')) {
+      return 'A senha deve ter pelo menos 6 caracteres.';
+    }
+    
+    if (message.includes('Invalid email')) {
+      return 'Por favor, digite um email válido.';
+    }
+
+    return 'Erro ao criar conta. Tente novamente.';
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -63,32 +84,43 @@ const Cadastro = () => {
     }
 
     setIsLoading(true);
+    console.log('Cadastro form submitted with:', { email });
 
     try {
       const { error } = await signUp(email, password);
       
       if (error) {
-        if (error.message.includes('already registered')) {
+        console.error('Cadastro error:', error);
+        
+        // Verificar se é erro de confirmação de email
+        if (error.message === 'confirm_email') {
           toast({
-            title: "Email já cadastrado",
-            description: "Este email já possui uma conta. Faça login ou use outro email.",
-            variant: "destructive",
+            title: "Conta criada com sucesso!",
+            description: error.details || "Verifique seu email para confirmar a conta antes de fazer login.",
+            variant: "default",
           });
+          // Redirecionar para login após um tempo
+          setTimeout(() => {
+            navigate('/login');
+          }, 3000);
         } else {
           toast({
             title: "Erro no cadastro",
-            description: "Erro ao criar conta. Tente novamente.",
+            description: getErrorMessage(error),
             variant: "destructive",
           });
         }
       } else {
+        console.log('Cadastro successful');
         toast({
           title: "Cadastro realizado com sucesso!",
           description: "Sua conta foi criada. Bem-vindo à Bella Fatia!",
         });
-        navigate('/login');
+        // Navigation will be handled by useEffect when user state changes
+        navigate('/');
       }
     } catch (error) {
+      console.error('Cadastro catch error:', error);
       toast({
         title: "Erro no cadastro",
         description: "Erro inesperado. Tente novamente.",
