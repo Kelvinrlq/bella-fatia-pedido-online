@@ -1,10 +1,12 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { X, MapPin, Phone, User, LogOut } from 'lucide-react';
+import { X, MapPin, Phone, User, LogOut, Settings } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/use-auth';
+import { useProfile } from '@/hooks/use-profile';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface Category {
   id: string;
@@ -25,6 +27,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
   onCategoryClick
 }) => {
   const { user, signOut } = useAuth();
+  const { profile } = useProfile();
 
   const handleCategoryClick = (categoryId: string) => {
     onCategoryClick(categoryId);
@@ -61,9 +64,37 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
         <div className="mb-6 pb-6 border-b border-gray-200">
           {user ? (
             <div className="space-y-3">
-              <p className="text-sm text-gray-600">
-                Olá, {user.email?.split('@')[0]}!
-              </p>
+              <div className="flex items-center space-x-3">
+                <Avatar className="w-10 h-10">
+                  <AvatarImage src={profile?.profile_photo_url || undefined} alt="Foto de perfil" />
+                  <AvatarFallback className="bg-pizza/10 text-pizza">
+                    {profile?.username?.[0]?.toUpperCase() || 
+                     user.email?.[0]?.toUpperCase() || 
+                     <User className="w-5 h-5" />}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="font-medium text-pizza-contrast">
+                    {profile?.username || 'Usuário'}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {user.email}
+                  </p>
+                </div>
+              </div>
+              
+              <Link to="/profile" onClick={onClose}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start text-pizza-contrast hover:bg-pizza/10 focus:ring-2 focus:ring-pizza focus:ring-offset-2"
+                  aria-label="Meu perfil"
+                >
+                  <Settings size={16} className="mr-2" aria-hidden="true" />
+                  Meu Perfil
+                </Button>
+              </Link>
+              
               <Button
                 onClick={handleSignOut}
                 variant="ghost"

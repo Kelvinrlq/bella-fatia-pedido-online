@@ -8,6 +8,7 @@ import { AuthProvider } from "@/hooks/use-auth";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Cadastro from "./pages/Cadastro";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import StatusPedido from "./pages/StatusPedido";
 
@@ -24,6 +25,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/cadastro" element={<Cadastro />} />
+            <Route path="/profile" element={<Profile />} />
             <Route path="/status-pedido/:orderId" element={<StatusPedido />} />
             {/* ADICIONE TODAS AS ROTAS PERSONALIZADAS ACIMA DA ROTA PADRÃO "*" */}
             <Route path="*" element={<NotFound />} />

@@ -1,11 +1,12 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ShoppingCart, Menu, X, User, LogOut } from 'lucide-react';
+import { ShoppingCart, Menu, X, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/hooks/use-cart';
 import { useAuth } from '@/hooks/use-auth';
+import UserDropdown from './UserDropdown';
 
 interface HeaderProps {
   isOpen: boolean;
@@ -16,11 +17,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ isOpen, toggleCart, toggleMobileMenu, isMobileMenuOpen }) => {
   const { totalItems } = useCart();
-  const { user, signOut } = useAuth();
-  
-  const handleSignOut = async () => {
-    await signOut();
-  };
+  const { user } = useAuth();
 
   return (
     <header className="sticky top-0 z-40 w-full bg-white shadow-md">
@@ -57,19 +54,7 @@ const Header: React.FC<HeaderProps> = ({ isOpen, toggleCart, toggleMobileMenu, i
           {/* Auth buttons */}
           {user ? (
             <div className="hidden sm:flex items-center space-x-2">
-              <span className="text-sm text-gray-600">
-                Olá, {user.email?.split('@')[0]}!
-              </span>
-              <Button
-                onClick={handleSignOut}
-                variant="ghost"
-                size="sm"
-                className="text-pizza-contrast hover:bg-pizza/10 focus:ring-2 focus:ring-pizza focus:ring-offset-2"
-                aria-label="Sair da conta"
-              >
-                <LogOut size={16} className="mr-1" aria-hidden="true" />
-                Sair
-              </Button>
+              <UserDropdown />
             </div>
           ) : (
             <div className="hidden sm:flex items-center space-x-2">
