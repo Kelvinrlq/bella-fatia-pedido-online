@@ -62,13 +62,25 @@ const ProfileEdit: React.FC = () => {
     );
   }
 
+  const displayName = profile?.username || profile?.email?.split('@')[0] || 'Usuário';
+
   return (
     <div className="max-w-2xl mx-auto p-6 space-y-6">
+      {/* Welcome Message */}
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold text-pizza-contrast mb-2">
+          Bem-vindo, {displayName}!
+        </h1>
+        <p className="text-gray-600">
+          Personalize sua experiência no Bella Fatia
+        </p>
+      </div>
+
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl text-pizza-contrast">Meu Perfil</CardTitle>
           <CardDescription>
-            Personalize sua experiência no Bella Fatia
+            Atualize suas informações pessoais
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">

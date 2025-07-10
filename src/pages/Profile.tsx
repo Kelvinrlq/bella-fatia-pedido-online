@@ -2,7 +2,7 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/use-auth';
-import Header from '@/components/Header';
+import ProfileHeader from '@/components/ProfileHeader';
 import ProfileEdit from '@/components/ProfileEdit';
 
 const Profile: React.FC = () => {
@@ -25,12 +25,7 @@ const Profile: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header 
-        isOpen={false} 
-        toggleCart={() => {}} 
-        toggleMobileMenu={() => {}} 
-        isMobileMenuOpen={false} 
-      />
+      <ProfileHeader />
       <main className="container-pizza py-8">
         <ProfileEdit />
       </main>
