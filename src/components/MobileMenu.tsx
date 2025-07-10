@@ -35,8 +35,14 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
   };
 
   const handleSignOut = async () => {
-    await signOut();
-    onClose();
+    console.log('Mobile menu sign out clicked');
+    try {
+      await signOut();
+      onClose();
+    } catch (error) {
+      console.error('Error during mobile sign out:', error);
+      onClose();
+    }
   };
 
   return (

@@ -18,8 +18,14 @@ const UserDropdown: React.FC = () => {
   const { user, signOut } = useAuth();
   const { profile } = useProfile();
 
-  const handleSignOut = async () => {
-    await signOut();
+  const handleSignOut = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    console.log('Sign out button clicked');
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Error during sign out:', error);
+    }
   };
 
   if (!user) return null;
