@@ -17,7 +17,9 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ isOpen, toggleCart, toggleMobileMenu, isMobileMenuOpen }) => {
   const { totalItems } = useCart();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  console.log('Header render - user:', user?.email, 'loading:', loading);
 
   return (
     <header className="sticky top-0 z-40 w-full bg-white shadow-md">
@@ -52,33 +54,37 @@ const Header: React.FC<HeaderProps> = ({ isOpen, toggleCart, toggleMobileMenu, i
 
         <div className="flex items-center space-x-4">
           {/* Auth buttons */}
-          {user ? (
-            <div className="hidden sm:flex items-center space-x-2">
-              <UserDropdown />
-            </div>
-          ) : (
-            <div className="hidden sm:flex items-center space-x-2">
-              <Link to="/login">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-pizza-contrast hover:bg-pizza/10 focus:ring-2 focus:ring-pizza focus:ring-offset-2"
-                  aria-label="Fazer login"
-                >
-                  <User size={16} className="mr-1" aria-hidden="true" />
-                  Entrar
-                </Button>
-              </Link>
-              <Link to="/cadastro">
-                <Button
-                  size="sm"
-                  className="bg-pizza hover:bg-pizza-dark text-white focus:ring-2 focus:ring-pizza focus:ring-offset-2"
-                  aria-label="Criar conta"
-                >
-                  Cadastrar
-                </Button>
-              </Link>
-            </div>
+          {!loading && (
+            <>
+              {user ? (
+                <div className="hidden sm:flex items-center space-x-2">
+                  <UserDropdown />
+                </div>
+              ) : (
+                <div className="hidden sm:flex items-center space-x-2">
+                  <Link to="/login">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-pizza-contrast hover:bg-pizza/10 focus:ring-2 focus:ring-pizza focus:ring-offset-2"
+                      aria-label="Fazer login"
+                    >
+                      <User size={16} className="mr-1" aria-hidden="true" />
+                      Entrar
+                    </Button>
+                  </Link>
+                  <Link to="/cadastro">
+                    <Button
+                      size="sm"
+                      className="bg-pizza hover:bg-pizza-dark text-white focus:ring-2 focus:ring-pizza focus:ring-offset-2"
+                      aria-label="Criar conta"
+                    >
+                      Cadastrar
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </>
           )}
 
           {/* Cart button */}

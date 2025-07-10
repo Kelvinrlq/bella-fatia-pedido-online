@@ -22,10 +22,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         console.log('Auth state change:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
+
+        // Create profile if user just signed in and doesn't have one
+        if (event === 'SIGNED_IN' && session?.user) {
+          setTimeout(async () => {
+            try {
+              // Check if profile exists
+              const { data: existingProfile } = await supabase
+                .from('profiles')
+                .select('id')
+                .eq('id', session.user.id)
+                .single();
+
+              // Create profile if it doesn't exist
+              if (!existingProfile) {
+                console.log('Creating profile for user:', session.user.email);
+                const { error } = await supabase
+                  .from('profiles')
+                  .insert({
+                    id: session.user.id,
+                    email: session.user.email || '',
+                    username: session.user.email?.split('@')[0] || 'Usuário'
+                  });
+
+                if (error) {
+                  console.error('Error creating profile:', error);
+                } else {
+                  console.log('Profile created successfully');
+                }
+              }
+            } catch (error) {
+              console.error('Error handling profile creation:', error);
+            }
+          }, 100);
+        }
+
         setLoading(false);
       }
     );
@@ -50,7 +85,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email,
         password,
         options: {
-          emailRedirectTo: redirectUrl
+          emailRedirectTo: redirectUrl,
+          data: {
+            email: email
+          }
         }
       });
 
@@ -61,7 +99,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { error };
       }
 
-      // Se o usuário foi criado mas precisa confirmar email
+      // If user was created and confirmed immediately (no email confirmation required)
+      if (data.user && data.session) {
+        console.log('User signed up and logged in immediately');
+        return { error: null };
+      }
+
+      // If user was created but needs email confirmation
       if (data.user && !data.session) {
         console.log('User created, email confirmation required');
         return { 
@@ -99,6 +143,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { error };
       }
 
+      console.log('Sign in successful, session will be handled by onAuthStateChange');
       return { error: null };
     } catch (err) {
       console.error('Sign in catch error:', err);
@@ -112,6 +157,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error('Sign out error:', error);
+      } else {
+        console.log('Sign out successful');
       }
     } catch (err) {
       console.error('Sign out catch error:', err);

@@ -21,32 +21,79 @@ export const useProfile = () => {
   useEffect(() => {
     if (user) {
       fetchProfile();
+    } else {
+      setProfile(null);
+      setLoading(false);
     }
   }, [user]);
 
   const fetchProfile = async () => {
+    if (!user) return;
+    
     try {
+      console.log('Fetching profile for user:', user.id);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user?.id)
+        .eq('id', user.id)
         .single();
 
       if (error) {
         console.error('Error fetching profile:', error);
-        toast({
-          title: "Erro",
-          description: "Erro ao carregar perfil",
-          variant: "destructive",
-        });
+        // If profile doesn't exist, create it
+        if (error.code === 'PGRST116') {
+          console.log('Profile not found, creating new profile');
+          await createProfile();
+        } else {
+          toast({
+            title: "Erro",
+            description: "Erro ao carregar perfil",
+            variant: "destructive",
+          });
+        }
         return;
       }
 
+      console.log('Profile fetched successfully:', data);
       setProfile(data);
     } catch (error) {
       console.error('Error fetching profile:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const createProfile = async () => {
+    if (!user) return;
+
+    try {
+      const newProfile = {
+        id: user.id,
+        email: user.email || '',
+        username: user.email?.split('@')[0] || 'Usuário',
+        profile_photo_url: null
+      };
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .insert(newProfile)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating profile:', error);
+        toast({
+          title: "Erro",
+          description: "Erro ao criar perfil",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log('Profile created successfully:', data);
+      setProfile(data);
+    } catch (error) {
+      console.error('Error creating profile:', error);
     }
   };
 
