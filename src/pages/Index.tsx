@@ -1,19 +1,26 @@
 
 import React, { useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import Banner from '@/components/Banner';
 import Header from '@/components/Header';
 import CategoryMenu from '@/components/CategoryMenu';
 import ProductList from '@/components/ProductList';
 import Cart from '@/components/Cart';
 import MobileMenu from '@/components/MobileMenu';
+import ProfileSetup from '@/components/ProfileSetup';
 import { CartProvider } from '@/hooks/use-cart';
+import { useAuth } from '@/hooks/use-auth';
+import { useProfile } from '@/hooks/use-profile';
 import { categories, products } from '@/data/mock-data';
 import { AnimatePresence } from 'framer-motion';
 
 const Index = () => {
+  const { user, loading: authLoading } = useAuth();
+  const { profile, loading: profileLoading } = useProfile();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState('all');
+  const [profileSetupComplete, setProfileSetupComplete] = useState(false);
   
   const toggleCart = () => {
     setIsCartOpen(!isCartOpen);
@@ -22,6 +29,32 @@ const Index = () => {
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
+
+  // Show loading while checking auth and profile
+  if (authLoading || profileLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pizza mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Redirect to login if not authenticated
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // Show profile setup if user doesn't have a complete profile
+  if (!profileSetupComplete && (!profile?.username || !profile?.username.trim())) {
+    return (
+      <ProfileSetup 
+        onComplete={() => setProfileSetupComplete(true)}
+      />
+    );
+  }
   
   return (
     <CartProvider>
