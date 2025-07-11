@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import { Navigate } from 'react-router-dom';
 import Banner from '@/components/Banner';
 import Header from '@/components/Header';
 import CategoryMenu from '@/components/CategoryMenu';
@@ -30,8 +29,8 @@ const Index = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  // Show loading while checking auth and profile
-  if (authLoading || profileLoading) {
+  // Show loading while checking auth and profile (only if user is logged in)
+  if (user && (authLoading || profileLoading)) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -42,13 +41,8 @@ const Index = () => {
     );
   }
 
-  // Redirect to login if not authenticated
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  // Show profile setup if user doesn't have a complete profile
-  if (!profileSetupComplete && (!profile?.username || !profile?.username.trim())) {
+  // Show profile setup if user is logged in but doesn't have a complete profile
+  if (user && !profileSetupComplete && (!profile?.username || !profile?.username.trim())) {
     return (
       <ProfileSetup 
         onComplete={() => setProfileSetupComplete(true)}

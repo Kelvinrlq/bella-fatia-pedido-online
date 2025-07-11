@@ -53,7 +53,7 @@ const Header: React.FC<HeaderProps> = ({ isOpen, toggleCart, toggleMobileMenu, i
         </div>
 
         <div className="flex items-center space-x-4">
-          {/* Auth buttons */}
+          {/* Auth buttons - Always visible */}
           {!loading && (
             <>
               {user ? (
@@ -61,7 +61,7 @@ const Header: React.FC<HeaderProps> = ({ isOpen, toggleCart, toggleMobileMenu, i
                   <UserDropdown />
                 </div>
               ) : (
-                <div className="hidden sm:flex items-center space-x-2">
+                <div className="flex items-center space-x-2">
                   <Link to="/login">
                     <Button
                       variant="ghost"
