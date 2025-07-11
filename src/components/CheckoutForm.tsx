@@ -532,25 +532,6 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
         />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="webhook">URL do Webhook (opcional)</Label>
-        <div className="flex relative">
-          <Link size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-          <Input 
-            id="webhook" 
-            name="webhook"
-            className="pl-10"
-            placeholder="https://seu-sistema.com/webhook"
-            value={webhookUrl}
-            onChange={(e) => setWebhookUrl(e.target.value)}
-            maxLength={500}
-          />
-        </div>
-        <p className="text-xs text-gray-500">
-          Configure uma URL para receber notificações automáticas quando o pedido for finalizado
-        </p>
-      </div>
-      
       <div className="bg-gray-50 p-3 rounded-lg mb-4">
         <div className="flex justify-between items-center text-lg font-semibold">
           <span>Total do Pedido:</span>
