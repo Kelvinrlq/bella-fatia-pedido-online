@@ -6,6 +6,7 @@ import CategoryMenu from '@/components/CategoryMenu';
 import ProductList from '@/components/ProductList';
 import Cart from '@/components/Cart';
 import MobileMenu from '@/components/MobileMenu';
+import Footer from '@/components/Footer';
 import ProfileSetup from '@/components/ProfileSetup';
 import { CartProvider } from '@/hooks/use-cart';
 import { useAuth } from '@/hooks/use-auth';
@@ -76,6 +77,8 @@ const Index = () => {
             />
           </div>
         </main>
+        
+        <Footer />
         
         <AnimatePresence>
           {isCartOpen && (
