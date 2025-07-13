@@ -42,8 +42,8 @@ serve(async (req) => {
     // Usar QR code estático da imagem fornecida pelo usuário
     const staticQrCodeImage = "/lovable-uploads/4a3fe2c2-e954-4c87-a77c-a2a54f323edd.png";
     
-    // Payload PIX simplificado para copia e cola
-    const pixPayload = `00020126580014br.gov.bcb.pix0136${PIX_KEY}5204000053039865802BR5925${MERCHANT_NAME}6009Sua Cidade62070503***6304`;
+    // PIX code simplificado - apenas o email para cópia
+    const pixPayload = PIX_KEY;
 
     console.log(`PIX gerado com sucesso`);
 

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product } from '@/components/ProductCard';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CartItem {
   product: Product;
@@ -21,23 +22,61 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [userSession, setUserSession] = useState<string | null>(null);
   
   useEffect(() => {
-    // Load cart from localStorage on component mount
-    const savedCart = localStorage.getItem('bella-fatia-cart');
-    if (savedCart) {
-      try {
-        setItems(JSON.parse(savedCart));
-      } catch (error) {
-        console.error('Failed to parse saved cart', error);
+    // Monitor auth state changes to clear cart on logout
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      const currentUserId = session?.user?.id || null;
+      
+      if (event === 'SIGNED_OUT' || (!session && userSession)) {
+        // User logged out - clear cart
+        console.log('User logged out, clearing cart');
+        setItems([]);
+        localStorage.removeItem('bella-fatia-cart');
+        toast.info('Carrinho esvaziado após logout', { duration: 2000 });
+      } else if (event === 'SIGNED_IN' && currentUserId) {
+        // User logged in - load cart if exists
+        const savedCart = localStorage.getItem('bella-fatia-cart');
+        if (savedCart) {
+          try {
+            setItems(JSON.parse(savedCart));
+          } catch (error) {
+            console.error('Failed to parse saved cart', error);
+          }
+        }
       }
-    }
-  }, []);
+      
+      setUserSession(currentUserId);
+    });
+
+    // Initial session check
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const currentUserId = session?.user?.id || null;
+      setUserSession(currentUserId);
+      
+      // Only load cart if user is authenticated
+      if (currentUserId) {
+        const savedCart = localStorage.getItem('bella-fatia-cart');
+        if (savedCart) {
+          try {
+            setItems(JSON.parse(savedCart));
+          } catch (error) {
+            console.error('Failed to parse saved cart', error);
+          }
+        }
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [userSession]);
   
   useEffect(() => {
-    // Save cart to localStorage whenever it changes
-    localStorage.setItem('bella-fatia-cart', JSON.stringify(items));
-  }, [items]);
+    // Save cart to localStorage whenever it changes (only if user is authenticated)
+    if (userSession) {
+      localStorage.setItem('bella-fatia-cart', JSON.stringify(items));
+    }
+  }, [items, userSession]);
   
   const addItem = (product: Product) => {
     setItems(prevItems => {

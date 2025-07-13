@@ -347,12 +347,12 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
           <div className="flex gap-2 mt-1">
             <Input 
               id="pix-code"
-              value={pixData.pixCopiaECola} 
+              value="kelvinrx00@gmail.com"
               readOnly 
-              className="text-xs"
+              className="text-sm font-mono"
             />
             <Button 
-              onClick={() => navigator.clipboard.writeText(pixData.pixCopiaECola)}
+              onClick={() => navigator.clipboard.writeText("kelvinrx00@gmail.com")}
               variant="outline"
               size="sm"
               className="focus:ring-2 focus:ring-pizza focus:ring-offset-2"
@@ -367,12 +367,35 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
         <div className="space-y-2 w-full">
           <Button 
             onClick={() => {
-              window.location.href = `/status-pedido/${orderId}`;
+              const orderItems = items.map(item => 
+                `${item.quantity}x ${item.product.name} - R$ ${(item.quantity * item.product.price).toFixed(2)}`
+              ).join('\n');
+              
+              const message = `*Pedido Bella Fatia - PIX*
+              
+*ID do Pedido*: ${orderId}
+*Valor Total*: R$ ${pixData.orderValue.toFixed(2)}
+*Código PIX*: kelvinrx00@gmail.com
+
+*Itens do Pedido*:
+${orderItems}
+
+*Instruções*:
+1. Realize o pagamento PIX para: kelvinrx00@gmail.com
+2. Valor: R$ ${pixData.orderValue.toFixed(2)}
+3. Anexe o comprovante de pagamento nesta conversa
+4. Aguarde a confirmação do pedido
+
+Obrigado pela preferência! 🍕`;
+
+              const encodedMessage = encodeURIComponent(message);
+              const whatsappUrl = `https://wa.me/5567984837419?text=${encodedMessage}`;
+              window.open(whatsappUrl, '_blank');
             }}
             className="w-full bg-pizza hover:bg-pizza-dark focus:ring-2 focus:ring-pizza focus:ring-offset-2"
-            aria-label="Verificar status do pedido"
+            aria-label="Enviar pedido e instruções por WhatsApp"
           >
-            Verificar Status do Pedido
+            Enviar Pedido por WhatsApp
           </Button>
           <Button
             onClick={onCancel}
