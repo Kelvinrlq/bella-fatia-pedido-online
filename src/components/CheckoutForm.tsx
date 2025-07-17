@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -6,8 +6,15 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { useCart } from '@/hooks/use-cart';
-import { CreditCard, Phone, MapPin, User, Link } from 'lucide-react';
+import { CreditCard, Phone, MapPin, User, Mail } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
+
+// Declarar tipo global para MercadoPago
+declare global {
+  interface Window {
+    MercadoPago: any;
+  }
+}
 
 interface CheckoutFormProps {
   onCancel: () => void;
@@ -17,12 +24,14 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
   const { toast } = useToast();
   const { items, totalPrice, clearCart } = useCart();
   const [loading, setLoading] = useState(false);
-  const [pixData, setPixData] = useState<{qrCodeImage: string, pixCopiaECola: string, orderValue: number} | null>(null);
+  const [pixData, setPixData] = useState<{qrCodeImage: string, pixCopiaECola: string, orderValue: number, paymentId?: string} | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [webhookUrl, setWebhookUrl] = useState('');
+  const [mp, setMp] = useState<any>(null);
   
   const [formData, setFormData] = useState({
     nome: '',
+    email: '',
     telefone: '',
     endereco: '',
     numero: '',
@@ -35,9 +44,40 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
 
   const [validationErrors, setValidationErrors] = useState({
     nome: false,
+    email: false,
     telefone: false,
     numero: false
   });
+
+  // Inicializar MercadoPago
+  useEffect(() => {
+    const initializeMercadoPago = () => {
+      if (window.MercadoPago && !mp) {
+        try {
+          const mercadoPago = new window.MercadoPago('APP_USR-5c9f0dae-9eb2-4cc2-a58d-79f70e6b16f8'); // Substitua pela sua public key
+          setMp(mercadoPago);
+          console.log('MercadoPago inicializado com sucesso');
+        } catch (error) {
+          console.error('Erro ao inicializar MercadoPago:', error);
+        }
+      }
+    };
+
+    // Verificar se o script já carregou
+    if (window.MercadoPago) {
+      initializeMercadoPago();
+    } else {
+      // Aguardar o script carregar
+      const checkMercadoPago = setInterval(() => {
+        if (window.MercadoPago) {
+          initializeMercadoPago();
+          clearInterval(checkMercadoPago);
+        }
+      }, 100);
+
+      return () => clearInterval(checkMercadoPago);
+    }
+  }, [mp]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -57,6 +97,24 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
         return;
       } else {
         setValidationErrors(prev => ({ ...prev, nome: false }));
+      }
+    }
+
+    // Validação para email
+    if (name === 'email') {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      
+      if (value && !emailRegex.test(value)) {
+        setValidationErrors(prev => ({ ...prev, email: true }));
+        toast({
+          title: "Erro de validação",
+          description: "Por favor, insira um email válido",
+          variant: "destructive",
+          duration: 3000,
+        });
+        return;
+      } else {
+        setValidationErrors(prev => ({ ...prev, email: false }));
       }
     }
     
@@ -104,13 +162,15 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
 
   const isFormValid = () => {
     return !validationErrors.nome &&
+           !validationErrors.email &&
            !validationErrors.telefone && 
            !validationErrors.numero && 
            formData.nome && 
            formData.telefone && 
            formData.endereco && 
            formData.numero && 
-           formData.bairro;
+           formData.bairro &&
+           (formData.formaPagamento !== 'pix' || formData.email);
   };
 
   const triggerWebhook = async (orderData: any) => {
@@ -123,6 +183,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
         orderId: orderData.id,
         customerName: formData.nome,
         customerPhone: formData.telefone,
+        customerEmail: formData.email,
         customerAddress: `${formData.endereco}, ${formData.numero}, ${formData.bairro}${formData.complemento ? ', ' + formData.complemento : ''}`,
         totalPrice: totalPrice,
         paymentMethod: formData.formaPagamento,
@@ -212,13 +273,14 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
           
         if (itemsError) throw itemsError;
         
-        console.log('Gerando PIX com valor total:', totalPrice);
+        console.log('Gerando PIX com Mercado Pago - valor total:', totalPrice);
         
         const { data: pixResponse, error: pixError } = await supabase.functions.invoke('generate-pix', {
           body: { 
             orderId: orderData.id,
             value: totalPrice,
-            customerName: formData.nome
+            customerName: formData.nome,
+            customerEmail: formData.email
           }
         });
         
@@ -233,7 +295,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
           .from('orders')
           .update({
             pix_code: pixResponse.pixCopiaECola,
-            pix_expiration: new Date(Date.now() + 15 * 60 * 1000).toISOString()
+            pix_expiration: pixResponse.expirationDate
           })
           .eq('id', orderData.id);
 
@@ -242,7 +304,8 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
         setPixData({
           qrCodeImage: pixResponse.qrCodeImage,
           pixCopiaECola: pixResponse.pixCopiaECola,
-          orderValue: pixResponse.orderValue || totalPrice
+          orderValue: pixResponse.orderValue || totalPrice,
+          paymentId: pixResponse.paymentId
         });
         setOrderId(orderData.id);
         
@@ -339,20 +402,28 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
       <div className="p-4 space-y-6 flex flex-col items-center">
         <h2 className="text-xl font-semibold text-center">Pagamento via PIX</h2>
         <p className="text-center">Escaneie o QR Code abaixo para efetuar o pagamento de <strong>R$ {pixData.orderValue.toFixed(2)}</strong></p>
-        <div className="border p-4 rounded-lg bg-white">
-          <img src={pixData.qrCodeImage} alt="QR Code PIX" className="w-64 h-64 mx-auto" />
-        </div>
+        
+        {pixData.qrCodeImage ? (
+          <div className="border p-4 rounded-lg bg-white">
+            <img src={pixData.qrCodeImage} alt="QR Code PIX" className="w-64 h-64 mx-auto" />
+          </div>
+        ) : (
+          <div className="border p-4 rounded-lg bg-gray-100 w-64 h-64 flex items-center justify-center">
+            <p className="text-gray-500 text-center">QR Code será exibido aqui</p>
+          </div>
+        )}
+        
         <div className="w-full max-w-md">
           <Label htmlFor="pix-code" className="text-sm font-medium">Código PIX (Copia e Cola):</Label>
           <div className="flex gap-2 mt-1">
             <Input 
               id="pix-code"
-              value="kelvinrx00@gmail.com"
+              value={pixData.pixCopiaECola}
               readOnly 
               className="text-sm font-mono"
             />
             <Button 
-              onClick={() => navigator.clipboard.writeText("kelvinrx00@gmail.com")}
+              onClick={() => navigator.clipboard.writeText(pixData.pixCopiaECola)}
               variant="outline"
               size="sm"
               className="focus:ring-2 focus:ring-pizza focus:ring-offset-2"
@@ -362,8 +433,13 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
             </Button>
           </div>
         </div>
+        
         <p className="text-sm text-center text-gray-500">O QR Code expira em 15 minutos</p>
         <p className="text-sm text-center">ID do Pedido: <span className="font-mono">{orderId}</span></p>
+        {pixData.paymentId && (
+          <p className="text-sm text-center">ID do Pagamento: <span className="font-mono">{pixData.paymentId}</span></p>
+        )}
+        
         <div className="space-y-2 w-full">
           <Button 
             onClick={() => {
@@ -375,13 +451,13 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
               
 *ID do Pedido*: ${orderId}
 *Valor Total*: R$ ${pixData.orderValue.toFixed(2)}
-*Código PIX*: kelvinrx00@gmail.com
+*Código PIX*: ${pixData.pixCopiaECola}
 
 *Itens do Pedido*:
 ${orderItems}
 
 *Instruções*:
-1. Realize o pagamento PIX para: kelvinrx00@gmail.com
+1. Realize o pagamento PIX usando o código acima
 2. Valor: R$ ${pixData.orderValue.toFixed(2)}
 3. Anexe o comprovante de pagamento nesta conversa
 4. Aguarde a confirmação do pedido
@@ -430,6 +506,26 @@ Obrigado pela preferência! 🍕`;
           />
         </div>
       </div>
+
+      {formData.formaPagamento === 'pix' && (
+        <div className="space-y-2">
+          <Label htmlFor="email">E-mail (obrigatório para PIX)</Label>
+          <div className="flex relative">
+            <Mail size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <Input 
+              id="email"
+              name="email"
+              type="email"
+              className={`pl-10 ${validationErrors.email ? 'border-red-500' : ''}`}
+              placeholder="seu@email.com"
+              value={formData.email}
+              onChange={handleInputChange}
+              maxLength={100}
+              required
+            />
+          </div>
+        </div>
+      )}
       
       <div className="space-y-2">
         <Label htmlFor="telefone">Telefone</Label>
@@ -524,7 +620,7 @@ Obrigado pela preferência! 🍕`;
           </div>
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="pix" id="pix" />
-            <Label htmlFor="pix">PIX</Label>
+            <Label htmlFor="pix">PIX (Mercado Pago)</Label>
           </div>
         </RadioGroup>
       </div>
