@@ -74,7 +74,8 @@ serve(async (req) => {
       headers: {
         "Authorization": `Bearer ${accessToken}`,
         "Content-Type": "application/json",
-        "X-Idempotency-Key": `bella-fatia-${orderId}-${Date.now()}`
+        "X-Idempotency-Key": `bella-fatia-${orderId}-${Date.now()}`,
+        "X-meli-session-id": crypto.randomUUID()
       },
       body: JSON.stringify(paymentPayload)
     });
@@ -83,13 +84,23 @@ serve(async (req) => {
       const errorText = await mercadoPagoResponse.text();
       console.error("Erro na API do Mercado Pago:", mercadoPagoResponse.status, errorText);
       
+      let errorMessage = "Erro ao gerar PIX no Mercado Pago";
+      
+      if (errorText.includes("Collector user without key enabled for QR render")) {
+        errorMessage = "Conta do Mercado Pago não habilitada para PIX. Verifique suas configurações no painel do Mercado Pago.";
+      } else if (errorText.includes("Invalid access token")) {
+        errorMessage = "Access token inválido. Verifique suas credenciais do Mercado Pago.";
+      } else if (errorText.includes("Financial Identity Use Case")) {
+        errorMessage = "Erro de identidade financeira. Verifique se sua conta está aprovada para PIX.";
+      }
+      
       return new Response(
         JSON.stringify({ 
-          error: "Erro ao gerar PIX no Mercado Pago",
+          error: errorMessage,
           details: errorText
         }),
         { 
-          status: 500,
+          status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" } 
         }
       );
