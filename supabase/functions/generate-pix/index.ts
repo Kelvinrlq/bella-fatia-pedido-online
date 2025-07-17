@@ -63,6 +63,7 @@ serve(async (req) => {
       },
       description: `Pedido Bella Fatia #${orderId}`,
       external_reference: orderId.toString(),
+      notification_url: `${Deno.env.get("SUPABASE_URL")}/functions/v1/pix-webhook`,
       date_of_expiration: new Date(Date.now() + 15 * 60 * 1000).toISOString() // 15 minutos
     };
 

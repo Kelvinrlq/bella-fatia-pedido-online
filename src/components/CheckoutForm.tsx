@@ -8,6 +8,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { useCart } from '@/hooks/use-cart';
 import { CreditCard, Phone, MapPin, User, Mail } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
+import { usePaymentStatus } from '@/hooks/use-payment-status';
 
 // Declarar tipo global para MercadoPago
 declare global {
@@ -28,6 +29,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
   const [orderId, setOrderId] = useState<string | null>(null);
   const [webhookUrl, setWebhookUrl] = useState('');
   const [mp, setMp] = useState<any>(null);
+  const { paymentStatus, checkPaymentStatus } = usePaymentStatus();
   
   const [formData, setFormData] = useState({
     nome: '',
@@ -78,6 +80,23 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
       return () => clearInterval(checkMercadoPago);
     }
   }, [mp]);
+
+  // Polling para verificar status do pagamento PIX
+  useEffect(() => {
+    let pollInterval: NodeJS.Timeout | null = null;
+    
+    if (orderId && paymentStatus === 'pending') {
+      pollInterval = setInterval(async () => {
+        await checkPaymentStatus(orderId);
+      }, 5000); // Verificar a cada 5 segundos
+    }
+    
+    return () => {
+      if (pollInterval) {
+        clearInterval(pollInterval);
+      }
+    };
+  }, [orderId, paymentStatus, checkPaymentStatus]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -401,11 +420,33 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
     return (
       <div className="p-4 space-y-6 flex flex-col items-center">
         <h2 className="text-xl font-semibold text-center">Pagamento via PIX</h2>
-        <p className="text-center">Escaneie o QR Code abaixo para efetuar o pagamento de <strong>R$ {pixData.orderValue.toFixed(2)}</strong></p>
         
-        {pixData.qrCodeImage ? (
+        {paymentStatus === 'paid' ? (
+          <div className="bg-green-100 border border-green-400 text-green-800 p-4 rounded-lg w-full text-center">
+            <h3 className="text-xl font-bold">🎉 Pagamento Aprovado!</h3>
+            <p>Seu pagamento PIX foi confirmado com sucesso.</p>
+          </div>
+        ) : paymentStatus === 'expired' ? (
+          <div className="bg-amber-100 border border-amber-400 text-amber-800 p-4 rounded-lg w-full text-center">
+            <h3 className="text-lg font-bold">⏰ PIX Expirado</h3>
+            <p>O tempo para pagamento expirou. Por favor, faça um novo pedido.</p>
+          </div>
+        ) : (
+          <p className="text-center">Escaneie o QR Code abaixo para efetuar o pagamento de <strong>R$ {pixData.orderValue.toFixed(2)}</strong></p>
+        )}
+        
+        {pixData.qrCodeImage && paymentStatus !== 'paid' ? (
           <div className="border p-4 rounded-lg bg-white">
             <img src={pixData.qrCodeImage} alt="QR Code PIX" className="w-64 h-64 mx-auto" />
+          </div>
+        ) : paymentStatus === 'paid' ? (
+          <div className="border p-4 rounded-lg bg-green-50 w-64 h-64 flex items-center justify-center">
+            <div className="text-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-24 w-24 mx-auto text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              <p className="text-green-700 mt-2 font-medium">Pagamento Confirmado!</p>
+            </div>
           </div>
         ) : (
           <div className="border p-4 rounded-lg bg-gray-100 w-64 h-64 flex items-center justify-center">
@@ -413,28 +454,33 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
           </div>
         )}
         
-        <div className="w-full max-w-md">
-          <Label htmlFor="pix-code" className="text-sm font-medium">Código PIX (Copia e Cola):</Label>
-          <div className="flex gap-2 mt-1">
-            <Input 
-              id="pix-code"
-              value={pixData.pixCopiaECola}
-              readOnly 
-              className="text-sm font-mono"
-            />
-            <Button 
-              onClick={() => navigator.clipboard.writeText(pixData.pixCopiaECola)}
-              variant="outline"
-              size="sm"
-              className="focus:ring-2 focus:ring-pizza focus:ring-offset-2"
-              aria-label="Copiar código PIX"
-            >
-              Copiar
-            </Button>
+        {paymentStatus !== 'paid' && (
+          <div className="w-full max-w-md">
+            <Label htmlFor="pix-code" className="text-sm font-medium">Código PIX (Copia e Cola):</Label>
+            <div className="flex gap-2 mt-1">
+              <Input 
+                id="pix-code"
+                value={pixData.pixCopiaECola}
+                readOnly 
+                className="text-sm font-mono"
+              />
+              <Button 
+                onClick={() => navigator.clipboard.writeText(pixData.pixCopiaECola)}
+                variant="outline"
+                size="sm"
+                className="focus:ring-2 focus:ring-pizza focus:ring-offset-2"
+                aria-label="Copiar código PIX"
+              >
+                Copiar
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
         
-        <p className="text-sm text-center text-gray-500">O QR Code expira em 15 minutos</p>
+        {paymentStatus === 'pending' && (
+          <p className="text-sm text-center text-gray-500">O QR Code expira em 15 minutos</p>
+        )}
+        
         <p className="text-sm text-center">ID do Pedido: <span className="font-mono">{orderId}</span></p>
         {pixData.paymentId && (
           <p className="text-sm text-center">ID do Pagamento: <span className="font-mono">{pixData.paymentId}</span></p>
@@ -451,16 +497,19 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
               
 *ID do Pedido*: ${orderId}
 *Valor Total*: R$ ${pixData.orderValue.toFixed(2)}
-*Código PIX*: ${pixData.pixCopiaECola}
+*Status*: ${paymentStatus === 'paid' ? '✅ PAGAMENTO CONFIRMADO' : '⏳ Aguardando pagamento'}
+${paymentStatus !== 'paid' ? `*Código PIX*: ${pixData.pixCopiaECola}` : ''}
 
 *Itens do Pedido*:
 ${orderItems}
 
-*Instruções*:
+${paymentStatus === 'paid' 
+  ? '*Seu pagamento foi confirmado! Aguarde o preparo e entrega.*' 
+  : `*Instruções*:
 1. Realize o pagamento PIX usando o código acima
 2. Valor: R$ ${pixData.orderValue.toFixed(2)}
 3. Anexe o comprovante de pagamento nesta conversa
-4. Aguarde a confirmação do pedido
+4. Aguarde a confirmação do pedido`}
 
 Obrigado pela preferência! 🍕`;
 
@@ -468,10 +517,14 @@ Obrigado pela preferência! 🍕`;
               const whatsappUrl = `https://wa.me/5567984837419?text=${encodedMessage}`;
               window.open(whatsappUrl, '_blank');
             }}
-            className="w-full bg-pizza hover:bg-pizza-dark focus:ring-2 focus:ring-pizza focus:ring-offset-2"
+            className={`w-full ${paymentStatus === 'paid' 
+              ? 'bg-green-600 hover:bg-green-700' 
+              : 'bg-pizza hover:bg-pizza-dark'} focus:ring-2 focus:ring-pizza focus:ring-offset-2`}
             aria-label="Enviar pedido e instruções por WhatsApp"
           >
-            Enviar Pedido por WhatsApp
+            {paymentStatus === 'paid' 
+              ? "Confirmar Pedido pelo WhatsApp" 
+              : "Enviar Instruções por WhatsApp"}
           </Button>
           <Button
             onClick={onCancel}
@@ -479,7 +532,7 @@ Obrigado pela preferência! 🍕`;
             className="w-full border-gray-200 text-gray-500 focus:ring-2 focus:ring-pizza focus:ring-offset-2"
             aria-label="Voltar para a loja"
           >
-            Voltar para a Loja
+            {paymentStatus === 'paid' ? "Voltar para a Loja" : "Cancelar"}
           </Button>
         </div>
       </div>
