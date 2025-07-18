@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from '@/components/ui/use-toast';
@@ -5,12 +6,15 @@ import { useToast } from '@/components/ui/use-toast';
 export interface PaymentStatusHook {
   paymentStatus: 'pending' | 'paid' | 'expired';
   isChecking: boolean;
+  paymentConfirmed: boolean;
   checkPaymentStatus: (orderId: string) => Promise<void>;
+  resetPaymentConfirmed: () => void;
 }
 
 export const usePaymentStatus = (): PaymentStatusHook => {
   const [paymentStatus, setPaymentStatus] = useState<'pending' | 'paid' | 'expired'>('pending');
   const [isChecking, setIsChecking] = useState(false);
+  const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const { toast } = useToast();
 
   const checkPaymentStatus = async (orderId: string) => {
@@ -53,12 +57,13 @@ export const usePaymentStatus = (): PaymentStatusHook => {
         }
       }
       
-      if (order.status === 'paid') {
+      if (order.status === 'paid' && paymentStatus !== 'paid') {
         setPaymentStatus('paid');
+        setPaymentConfirmed(true);
         toast({
           title: "🎉 Pagamento Confirmado!",
-          description: "Seu pagamento PIX foi aprovado com sucesso! Agora você pode enviar o pedido.",
-          duration: 6000,
+          description: "Seu pagamento PIX foi aprovado com sucesso!",
+          duration: 8000,
         });
       } else if (order.status === 'expired') {
         setPaymentStatus('expired');
@@ -77,9 +82,15 @@ export const usePaymentStatus = (): PaymentStatusHook => {
     }
   };
 
+  const resetPaymentConfirmed = () => {
+    setPaymentConfirmed(false);
+  };
+
   return {
     paymentStatus,
     isChecking,
-    checkPaymentStatus
+    paymentConfirmed,
+    checkPaymentStatus,
+    resetPaymentConfirmed
   };
 };

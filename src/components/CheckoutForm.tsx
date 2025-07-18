@@ -9,6 +9,7 @@ import { useCart } from '@/hooks/use-cart';
 import { CreditCard, Phone, MapPin, User, Mail } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 import { usePaymentStatus } from '@/hooks/use-payment-status';
+import PaymentStatusBanner from './PaymentStatusBanner';
 
 // Declarar tipo global para MercadoPago
 declare global {
@@ -29,7 +30,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
   const [orderId, setOrderId] = useState<string | null>(null);
   const [webhookUrl, setWebhookUrl] = useState('');
   const [mp, setMp] = useState<any>(null);
-  const { paymentStatus, checkPaymentStatus } = usePaymentStatus();
+  const { paymentStatus, isChecking, paymentConfirmed, checkPaymentStatus, resetPaymentConfirmed } = usePaymentStatus();
   
   const [formData, setFormData] = useState({
     nome: '',
@@ -417,29 +418,33 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
   };
 
   if (pixData) {
+    const isPaid = paymentStatus === 'paid' || paymentConfirmed;
+    const isExpired = paymentStatus === 'expired';
+    const isPending = paymentStatus === 'pending';
+
     return (
       <div className="p-4 space-y-6 flex flex-col items-center">
         <h2 className="text-xl font-semibold text-center">Pagamento via PIX</h2>
         
-        {paymentStatus === 'paid' ? (
-          <div className="bg-green-100 border border-green-400 text-green-800 p-4 rounded-lg w-full text-center">
-            <h3 className="text-xl font-bold">🎉 Pagamento Aprovado!</h3>
-            <p>Seu pagamento PIX foi confirmado com sucesso.</p>
-          </div>
-        ) : paymentStatus === 'expired' ? (
-          <div className="bg-amber-100 border border-amber-400 text-amber-800 p-4 rounded-lg w-full text-center">
-            <h3 className="text-lg font-bold">⏰ PIX Expirado</h3>
-            <p>O tempo para pagamento expirou. Por favor, faça um novo pedido.</p>
-          </div>
-        ) : (
+        <PaymentStatusBanner 
+          status={paymentStatus} 
+          isChecking={isChecking}
+          paymentConfirmed={paymentConfirmed}
+        />
+        
+        {!isPaid && !isExpired && (
           <p className="text-center">Escaneie o QR Code abaixo para efetuar o pagamento de <strong>R$ {pixData.orderValue.toFixed(2)}</strong></p>
         )}
         
-        {pixData.qrCodeImage && paymentStatus !== 'paid' ? (
+        {/* QR Code - só mostra se não foi pago e não expirou */}
+        {pixData.qrCodeImage && isPending && (
           <div className="border p-4 rounded-lg bg-white">
             <img src={pixData.qrCodeImage} alt="QR Code PIX" className="w-64 h-64 mx-auto" />
           </div>
-        ) : paymentStatus === 'paid' ? (
+        )}
+
+        {/* Ícone de sucesso quando pago */}
+        {isPaid && (
           <div className="border p-4 rounded-lg bg-green-50 w-64 h-64 flex items-center justify-center">
             <div className="text-center">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-24 w-24 mx-auto text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -448,13 +453,10 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
               <p className="text-green-700 mt-2 font-medium">Pagamento Confirmado!</p>
             </div>
           </div>
-        ) : (
-          <div className="border p-4 rounded-lg bg-gray-100 w-64 h-64 flex items-center justify-center">
-            <p className="text-gray-500 text-center">QR Code será exibido aqui</p>
-          </div>
         )}
-        
-        {paymentStatus !== 'paid' && (
+
+        {/* Código PIX - só mostra se pendente */}
+        {isPending && (
           <div className="w-full max-w-md">
             <Label htmlFor="pix-code" className="text-sm font-medium">Código PIX (Copia e Cola):</Label>
             <div className="flex gap-2 mt-1">
@@ -465,7 +467,14 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
                 className="text-sm font-mono"
               />
               <Button 
-                onClick={() => navigator.clipboard.writeText(pixData.pixCopiaECola)}
+                onClick={() => {
+                  navigator.clipboard.writeText(pixData.pixCopiaECola);
+                  toast({
+                    title: "Código copiado!",
+                    description: "O código PIX foi copiado para a área de transferência.",
+                    duration: 3000,
+                  });
+                }}
                 variant="outline"
                 size="sm"
                 className="focus:ring-2 focus:ring-pizza focus:ring-offset-2"
@@ -477,7 +486,8 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
           </div>
         )}
         
-        {paymentStatus === 'pending' && (
+        {/* Tempo de expiração - só mostra se pendente */}
+        {isPending && (
           <p className="text-sm text-center text-gray-500">O QR Code expira em 15 minutos</p>
         )}
         
@@ -487,6 +497,7 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
         )}
         
         <div className="space-y-2 w-full">
+          {/* Botão WhatsApp - só funciona quando pago */}
           <Button 
             onClick={() => {
               const orderItems = items.map(item => 
@@ -497,42 +508,86 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
               
 *ID do Pedido*: ${orderId}
 *Valor Total*: R$ ${pixData.orderValue.toFixed(2)}
-*Status*: ${paymentStatus === 'paid' ? '✅ PAGAMENTO CONFIRMADO' : '⏳ Aguardando pagamento'}
-${paymentStatus !== 'paid' ? `*Código PIX*: ${pixData.pixCopiaECola}` : ''}
+*Status*: ✅ PAGAMENTO CONFIRMADO
 
 *Itens do Pedido*:
 ${orderItems}
 
-${paymentStatus === 'paid' 
-  ? '*Seu pagamento foi confirmado! Aguarde o preparo e entrega.*' 
-  : `*Instruções*:
-1. Realize o pagamento PIX usando o código acima
-2. Valor: R$ ${pixData.orderValue.toFixed(2)}
-3. Anexe o comprovante de pagamento nesta conversa
-4. Aguarde a confirmação do pedido`}
+*Seu pagamento foi confirmado! Aguarde o preparo e entrega.*
 
 Obrigado pela preferência! 🍕`;
 
               const encodedMessage = encodeURIComponent(message);
               const whatsappUrl = `https://wa.me/5567984837419?text=${encodedMessage}`;
               window.open(whatsappUrl, '_blank');
+              
+              // Limpar carrinho e voltar após enviar
+              clearCart();
+              resetPaymentConfirmed();
+              onCancel();
             }}
-            className={`w-full ${paymentStatus === 'paid' 
-              ? 'bg-green-600 hover:bg-green-700' 
-              : 'bg-pizza hover:bg-pizza-dark'} focus:ring-2 focus:ring-pizza focus:ring-offset-2`}
-            aria-label="Enviar pedido e instruções por WhatsApp"
+            className={`w-full ${isPaid 
+              ? 'bg-green-600 hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2' 
+              : 'bg-gray-400 cursor-not-allowed'}`}
+            disabled={!isPaid}
+            aria-label={isPaid ? "Enviar pedido confirmado por WhatsApp" : "Aguardando confirmação do pagamento"}
           >
-            {paymentStatus === 'paid' 
-              ? "Confirmar Pedido pelo WhatsApp" 
-              : "Enviar Instruções por WhatsApp"}
+            {isPaid 
+              ? "✅ Enviar Pedido pelo WhatsApp" 
+              : "⏳ Aguardando Pagamento..."}
           </Button>
+
+          {/* Botão de instruções - só mostra se pendente */}
+          {isPending && (
+            <Button 
+              onClick={() => {
+                const orderItems = items.map(item => 
+                  `${item.quantity}x ${item.product.name} - R$ ${(item.quantity * item.product.price).toFixed(2)}`
+                ).join('\n');
+                
+                const message = `*Pedido Bella Fatia - PIX*
+                
+*ID do Pedido*: ${orderId}
+*Valor Total*: R$ ${pixData.orderValue.toFixed(2)}
+*Status*: ⏳ Aguardando pagamento
+*Código PIX*: ${pixData.pixCopiaECola}
+
+*Itens do Pedido*:
+${orderItems}
+
+*Instruções*:
+1. Realize o pagamento PIX usando o código acima
+2. Valor: R$ ${pixData.orderValue.toFixed(2)}
+3. Anexe o comprovante de pagamento nesta conversa
+4. Aguarde a confirmação do pedido
+
+Obrigado pela preferência! 🍕`;
+
+                const encodedMessage = encodeURIComponent(message);
+                const whatsappUrl = `https://wa.me/5567984837419?text=${encodedMessage}`;
+                window.open(whatsappUrl, '_blank');
+              }}
+              variant="outline"
+              className="w-full border-pizza text-pizza hover:bg-pizza hover:text-white focus:ring-2 focus:ring-pizza focus:ring-offset-2"
+              aria-label="Enviar instruções de pagamento por WhatsApp"
+            >
+              📱 Enviar Instruções por WhatsApp
+            </Button>
+          )}
+
           <Button
-            onClick={onCancel}
+            onClick={() => {
+              if (isPaid) {
+                clearCart();
+                resetPaymentConfirmed();
+              }
+              onCancel();
+            }}
             variant="outline"
             className="w-full border-gray-200 text-gray-500 focus:ring-2 focus:ring-pizza focus:ring-offset-2"
             aria-label="Voltar para a loja"
           >
-            {paymentStatus === 'paid' ? "Voltar para a Loja" : "Cancelar"}
+            {isPaid ? "Voltar para a Loja" : "Cancelar"}
           </Button>
         </div>
       </div>
