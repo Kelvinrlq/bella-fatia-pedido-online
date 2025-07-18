@@ -6,7 +6,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { useCart } from '@/hooks/use-cart';
-import { CreditCard, Phone, MapPin, User, Mail } from 'lucide-react';
+import { CreditCard, Phone, MapPin, User, Mail, RefreshCw } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 import { usePaymentStatus } from '@/hooks/use-payment-status';
 import PaymentStatusBanner from './PaymentStatusBanner';
@@ -30,7 +30,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
   const [orderId, setOrderId] = useState<string | null>(null);
   const [webhookUrl, setWebhookUrl] = useState('');
   const [mp, setMp] = useState<any>(null);
-  const { paymentStatus, isChecking, paymentConfirmed, checkPaymentStatus, resetPaymentConfirmed } = usePaymentStatus();
+  const { paymentStatus, isChecking, paymentConfirmed, lastCheck, checkPaymentStatus, resetPaymentConfirmed } = usePaymentStatus();
   
   const [formData, setFormData] = useState({
     nome: '',
@@ -82,17 +82,66 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
     }
   }, [mp]);
 
-  // Polling para verificar status do pagamento PIX
+  // Real-time updates via Supabase + Polling melhorado
   useEffect(() => {
+    if (!orderId) return;
+
+    console.log(`🚀 Configurando monitoramento para pedido: ${orderId}`);
+    
+    // Real-time subscription para mudanças na tabela orders
+    const channel = supabase
+      .channel('order-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'orders',
+          filter: `id=eq.${orderId}`
+        },
+        (payload) => {
+          console.log('📡 Real-time update recebido:', payload);
+          
+          if (payload.new && payload.new.status) {
+            const newStatus = payload.new.status;
+            console.log(`📡 Status atualizado via real-time: ${newStatus}`);
+            
+            if (newStatus === 'paid' && paymentStatus !== 'paid') {
+              console.log('🎉 Pagamento confirmado via real-time!');
+              setPaymentStatus('paid');
+              setPaymentConfirmed(true);
+              toast({
+                title: "🎉 Pagamento Confirmado!",
+                description: "Seu pagamento PIX foi aprovado com sucesso!",
+                duration: 8000,
+              });
+            } else if (newStatus === 'expired') {
+              console.log('⏰ PIX expirado via real-time');
+              setPaymentStatus('expired');
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    // Polling como backup (a cada 10 segundos)
     let pollInterval: NodeJS.Timeout | null = null;
     
-    if (orderId && paymentStatus === 'pending') {
+    if (paymentStatus === 'pending') {
+      console.log('⏳ Iniciando polling para verificação de pagamento');
+      
       pollInterval = setInterval(async () => {
+        console.log('🔄 Executando verificação de polling...');
         await checkPaymentStatus(orderId);
-      }, 5000); // Verificar a cada 5 segundos
+      }, 10000); // A cada 10 segundos
+      
+      // Verificação inicial imediata
+      checkPaymentStatus(orderId);
     }
     
     return () => {
+      console.log('🧹 Limpando monitoramento de pagamento');
+      supabase.removeChannel(channel);
       if (pollInterval) {
         clearInterval(pollInterval);
       }
@@ -431,6 +480,14 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
           isChecking={isChecking}
           paymentConfirmed={paymentConfirmed}
         />
+
+        {/* Debug Info */}
+        <div className="w-full max-w-md text-xs text-gray-500 bg-gray-50 p-2 rounded">
+          <p>Status: {paymentStatus}</p>
+          <p>Verificando: {isChecking ? 'Sim' : 'Não'}</p>
+          <p>Última verificação: {lastCheck ? lastCheck.toLocaleTimeString() : 'Nunca'}</p>
+          <p>ID do Pedido: {orderId}</p>
+        </div>
         
         {!isPaid && !isExpired && (
           <p className="text-center">Escaneie o QR Code abaixo para efetuar o pagamento de <strong>R$ {pixData.orderValue.toFixed(2)}</strong></p>
@@ -491,12 +548,29 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
           <p className="text-sm text-center text-gray-500">O QR Code expira em 15 minutos</p>
         )}
         
-        <p className="text-sm text-center">ID do Pedido: <span className="font-mono">{orderId}</span></p>
-        {pixData.paymentId && (
-          <p className="text-sm text-center">ID do Pagamento: <span className="font-mono">{pixData.paymentId}</span></p>
-        )}
-        
         <div className="space-y-2 w-full">
+          {/* Botão de verificação manual */}
+          {isPending && (
+            <Button 
+              onClick={() => orderId && checkPaymentStatus(orderId)}
+              variant="outline"
+              className="w-full border-blue-200 text-blue-600 hover:bg-blue-50"
+              disabled={isChecking}
+            >
+              {isChecking ? (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  Verificando...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Verificar Pagamento Manualmente
+                </>
+              )}
+            </Button>
+          )}
+
           {/* Botão WhatsApp - só funciona quando pago */}
           <Button 
             onClick={() => {
