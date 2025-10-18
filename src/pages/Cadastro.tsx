@@ -7,12 +7,14 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Mail, Lock, CheckCircle } from 'lucide-react';
+import ConfirmacaoEmail from './ConfirmacaoEmail';
 
 const Cadastro = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [needsEmailConfirmation, setNeedsEmailConfirmation] = useState(false);
   const { signUp, user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -94,15 +96,8 @@ const Cadastro = () => {
         
         // Verificar se é erro de confirmação de email
         if (error.message === 'confirm_email') {
-          toast({
-            title: "Conta criada com sucesso!",
-            description: error.details || "Verifique seu email para confirmar a conta antes de fazer login.",
-            variant: "default",
-          });
-          // Redirecionar para login após um tempo
-          setTimeout(() => {
-            navigate('/login');
-          }, 3000);
+          console.log('Email confirmation required, showing confirmation page');
+          setNeedsEmailConfirmation(true);
         } else {
           toast({
             title: "Erro no cadastro",
@@ -111,7 +106,7 @@ const Cadastro = () => {
           });
         }
       } else {
-        console.log('Cadastro successful');
+        console.log('Cadastro successful - immediate login');
         toast({
           title: "Cadastro realizado com sucesso!",
           description: "Sua conta foi criada. Bem-vindo à Bella Fatia!",
@@ -130,6 +125,11 @@ const Cadastro = () => {
       setIsLoading(false);
     }
   };
+
+  // Mostrar página de confirmação se necessário
+  if (needsEmailConfirmation) {
+    return <ConfirmacaoEmail email={email} />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
