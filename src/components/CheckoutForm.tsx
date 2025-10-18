@@ -108,8 +108,6 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
             
             if (newStatus === 'paid' && paymentStatus !== 'paid') {
               console.log('🎉 Pagamento confirmado via real-time!');
-              setPaymentStatus('paid');
-              setPaymentConfirmed(true);
               toast({
                 title: "🎉 Pagamento Confirmado!",
                 description: "Seu pagamento PIX foi aprovado com sucesso!",
@@ -117,7 +115,6 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
               });
             } else if (newStatus === 'expired') {
               console.log('⏰ PIX expirado via real-time');
-              setPaymentStatus('expired');
             }
           }
         }
