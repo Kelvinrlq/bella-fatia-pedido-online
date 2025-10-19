@@ -440,7 +440,7 @@ ${formData.observacoes ? `\n*Observações*: ${formData.observacoes}` : ''}`;
         const encodedMessage = encodeURIComponent(message);
         const whatsappUrl = `https://wa.me/556793277165?text=${encodedMessage}`;
         
-        window.open(whatsappUrl, '_blank');
+        window.location.href = whatsappUrl;
         
         toast({
           title: "Pedido enviado!",
@@ -590,7 +590,7 @@ Obrigado pela preferência! 🍕`;
 
               const encodedMessage = encodeURIComponent(message);
               const whatsappUrl = `https://wa.me/556793277165?text=${encodedMessage}`;
-              window.open(whatsappUrl, '_blank');
+              window.location.href = whatsappUrl;
               
               // Limpar carrinho e voltar após enviar
               clearCart();
@@ -636,7 +636,7 @@ Obrigado pela preferência! 🍕`;
 
                 const encodedMessage = encodeURIComponent(message);
                 const whatsappUrl = `https://wa.me/556793277165?text=${encodedMessage}`;
-                window.open(whatsappUrl, '_blank');
+                window.location.href = whatsappUrl;
               }}
               variant="outline"
               className="w-full border-pizza text-pizza hover:bg-pizza hover:text-white focus:ring-2 focus:ring-pizza focus:ring-offset-2"
